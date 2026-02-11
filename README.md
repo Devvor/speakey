@@ -1,74 +1,73 @@
 # Parakeet STT
 
-> **Status:** 🚧 In Development - Implementation planning phase
+Minimal speech-to-text CLI application using NVIDIA's Parakeet TDT 0.6B model, optimized for Apple Neural Engine on Mac.
 
-A minimal, locally-run speech-to-text CLI application using NVIDIA's Parakeet TDT 0.6B model, optimized for Apple Neural Engine on Mac with fallback support for NVIDIA CUDA GPUs and CPU.
+## Features
 
-## 🎯 Project Goals
+- 🎯 Simple CLI interface
+- 🚀 Automatic hardware optimization (ANE/GPU/CPU)
+- 📝 Text file output with timestamps
+- 🍎 Native Apple Silicon support via MLX
+- 🎮 NVIDIA GPU support via CUDA
+- 💻 CPU fallback for compatibility
 
-- **Local-first:** All processing happens on your machine - no cloud dependencies
-- **Apple Silicon optimized:** Native ANE acceleration via MLX framework (10x faster)
-- **Cross-platform:** Mac (ANE), Windows/Linux (CUDA GPU), CPU fallback
-- **Simple CLI:** Easy-to-use command-line interface
-- **Accurate:** 6.05% WER using NVIDIA's Parakeet TDT 0.6B model
+## Installation
 
-## ✨ Features
-
-- 🎤 High-accuracy speech recognition (600M parameter model)
-- 🍎 **Apple Neural Engine optimization** via MLX framework
-- 🎮 NVIDIA GPU acceleration via CUDA
-- 💻 CPU fallback for universal compatibility
-- 📝 Text file output with optional word/segment timestamps
-- 🚀 Real-time performance on Apple Silicon
-- 🎯 Supports WAV and FLAC audio formats (16kHz recommended)
-
-## 🏗️ Architecture
-
-```
-parakeet-stt/
-├── src/                    # Main application package
-│   ├── backends/           # Platform-specific implementations
-│   │   ├── nemo_backend.py # NeMo/PyTorch (CUDA/CPU)
-│   │   ├── mlx_backend.py  # MLX (Apple Neural Engine)
-│   │   └── factory.py      # Automatic backend selection
-│   ├── config.py           # Configuration management
-│   ├── model.py            # Model wrapper
-│   ├── output.py           # Output formatting
-│   └── cli.py              # CLI interface
-├── tests/                  # Test suite
-├── docs/                   # Documentation and research
-└── output/                 # Transcription outputs
-```
-
-## 🛠️ Technology Stack
-
-- **Model:** [nvidia/parakeet-tdt-0.6b-v3](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3) (FastConformer-TDT)
-- **Frameworks:**
-  - [NeMo Toolkit](https://github.com/NVIDIA/NeMo) for baseline implementation
-  - [MLX](https://github.com/ml-explore/mlx) for Apple Silicon optimization
-  - PyTorch 2.0+ with MPS/CUDA support
-- **CLI:** Click framework
-- **Testing:** pytest with coverage
-
-## 🚀 Planned Usage
+### Basic Installation (NeMo backend)
 
 ```bash
-# Basic transcription
+# Clone repository
+git clone <repository-url>
+cd parakeet-stt
+
+# Create and activate virtual environment
+python3 -m venv venv
+source venv/bin/activate  # macOS/Linux
+# OR on Windows: venv\Scripts\activate
+
+# Upgrade pip and install dependencies
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+### Apple Silicon Installation (MLX backend)
+
+```bash
+# Follow basic installation steps above, then:
+
+# Ensure venv is activated (you should see (venv) in your prompt)
+source venv/bin/activate  # macOS/Linux
+
+# Install MLX dependencies for Apple Neural Engine
+pip install -r requirements-mlx.txt
+```
+
+## Usage
+
+### Basic Transcription
+
+```bash
+# Transcribe audio file
 parakeet-stt transcribe audio.wav
 
-# With custom output directory
+# Specify output directory
 parakeet-stt transcribe audio.wav --output-dir results/
 
-# Without timestamps
+# Disable timestamps
 parakeet-stt transcribe audio.wav --no-timestamps
 
 # Force specific device
 parakeet-stt transcribe audio.wav --device cpu
 ```
 
+### Supported Audio Formats
+
+- WAV (16kHz monochannel recommended)
+- FLAC
+
 ### Output Format
 
-Transcriptions are saved as `.txt` files:
+Transcriptions are saved as `.txt` files with the same name as the input audio:
 
 ```
 Transcription:
@@ -88,68 +87,124 @@ Segment-level:
   ...
 ```
 
-## 🎛️ Hardware Acceleration
+## Hardware Acceleration
 
-| Platform | Backend | Hardware | Expected Performance |
-|----------|---------|----------|---------------------|
-| Mac (Apple Silicon) | MLX | Apple Neural Engine | **10x faster** |
-| Mac (Intel) | NeMo | CPU/MPS GPU | Baseline |
+The application automatically selects the best backend:
+
+| Platform | Backend | Hardware | Performance |
+|----------|---------|----------|-------------|
+| Mac (Apple Silicon) | MLX | Apple Neural Engine | 10x faster |
+| Mac (Intel) | NeMo | CPU/GPU | Baseline |
 | Linux/Windows (NVIDIA) | NeMo | CUDA GPU | 3-5x faster |
 | Other | NeMo | CPU | Baseline |
 
-## 📋 Development Roadmap
+### Force Specific Backend
 
-- [x] Research Apple Neural Engine optimization approaches
-- [x] Create implementation plan with MLX framework
-- [x] Define project structure and architecture
-- [ ] **Phase 1:** Basic NeMo implementation with PyTorch MPS
-- [ ] **Phase 2:** CLI interface with file I/O
-- [ ] **Phase 3:** MLX backend integration for ANE acceleration
-- [ ] Performance benchmarking across backends
-- [ ] Batch processing support
-- [ ] Real-time audio streaming
+```bash
+# Use specific device
+parakeet-stt transcribe audio.wav --device mps   # Mac GPU
+parakeet-stt transcribe audio.wav --device cuda  # NVIDIA
+parakeet-stt transcribe audio.wav --device cpu   # CPU only
+```
 
-## 📚 Documentation
+## Development
 
-- **Development Phases:** [docs/knowledge/development-phases.md](docs/knowledge/development-phases.md) - Incremental feature delivery
-- **Model Info:** [docs/knowledge/parakeet-tdt-model.md](docs/knowledge/parakeet-tdt-model.md) - Parakeet TDT specifications
-- **Implementation Plan:** [docs/plans/2026-02-11-minimal-stt-cli.md](docs/plans/2026-02-11-minimal-stt-cli.md) - Detailed task breakdown
-- **MLX Research:** [docs/research/mlx-integration.md](docs/research/mlx-integration.md) - ANE optimization research
+**IMPORTANT:** Always activate your virtual environment before running development commands:
 
-## 🔬 Model Information
+```bash
+source venv/bin/activate  # macOS/Linux
+# OR on Windows: venv\Scripts\activate
+```
+
+### Run Tests
+
+```bash
+# Ensure venv is activated (you should see (venv) in your prompt)
+
+# Run all tests
+pytest
+
+# Run without slow tests
+pytest -m "not slow"
+
+# Run with coverage
+pytest --cov=src
+```
+
+### Code Quality
+
+```bash
+# Ensure venv is activated
+
+# Format code
+black src/ tests/
+
+# Lint code
+ruff check src/ tests/
+
+# Type checking (optional)
+mypy src/
+```
+
+## Architecture
+
+```
+parakeet-stt/
+├── src/                # Main application package
+│   ├── backends/       # Backend implementations
+│   │   ├── base.py    # Abstract backend interface
+│   │   ├── nemo_backend.py # NeMo/PyTorch backend
+│   │   ├── mlx_backend.py  # MLX/ANE backend
+│   │   └── factory.py # Automatic backend selection
+│   ├── cli.py         # CLI application
+│   ├── config.py      # Configuration management
+│   ├── model.py       # Model wrapper
+│   └── output.py      # Output formatting
+└── tests/             # Test suite
+```
+
+## Model Information
 
 - **Model:** nvidia/parakeet-tdt-0.6b-v3
 - **Parameters:** 600 million
-- **Architecture:** FastConformer-TDT with full attention
-- **Word Error Rate:** 6.05% average across benchmarks
-- **RTFx:** 3380 on HF-Open-ASR leaderboard
+- **Architecture:** FastConformer-TDT
+- **Word Error Rate:** 6.05% average
 - **License:** CC-BY-4.0
 
-## 🌟 MLX Framework Integration
+## Troubleshooting
 
-This project prioritizes the **MLX Framework** for Apple Silicon optimization:
+### macOS: MPS Backend Not Available
 
-- **Direct ANE Access:** Utilizes Apple Neural Engine for 10x performance boost
-- **Low Memory Usage:** 14x reduction compared to CPU implementation
-- **Native Integration:** Purpose-built for M1/M2/M3 chips
-- **Active Development:** Based on [parakeet-mlx](https://github.com/EliFuzz/parakeet-mlx) implementations
+```bash
+# Enable MPS fallback
+export PYTORCH_ENABLE_MPS_FALLBACK=1
+parakeet-stt transcribe audio.wav
+```
 
-## 🔗 References
+### MLX Backend Not Loading
 
-- [Parakeet TDT Model](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3) - HuggingFace model page
-- [NeMo Framework](https://docs.nvidia.com/nemo-framework/) - NVIDIA's toolkit
-- [Apple MLX](https://github.com/ml-explore/mlx) - Apple's ML framework
-- [parakeet-mlx](https://github.com/EliFuzz/parakeet-mlx) - MLX implementation
-- [Argmax Optimization](https://www.argmaxinc.com/blog/nvidia-frontier-speech-models-on-argmax-sdk) - Performance benchmarks
+```bash
+# Check MLX installation
+python -c "import mlx; print(mlx.__version__)"
 
-## 📄 License
+# Reinstall MLX dependencies
+pip install -r requirements-mlx.txt --force-reinstall
+```
 
-This project follows the model's **CC-BY-4.0** license.
+### CUDA Out of Memory
 
-## 🤝 Contributing
+```bash
+# Use CPU instead
+parakeet-stt transcribe audio.wav --device cpu
+```
 
-This is currently a personal project in active development. Once the initial implementation is complete, contribution guidelines will be added.
+## References
 
----
+- [Parakeet TDT Model](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3)
+- [NeMo Documentation](https://docs.nvidia.com/nemo-framework/)
+- [Apple MLX Framework](https://github.com/ml-explore/mlx)
+- [Parakeet MLX Implementation](https://github.com/EliFuzz/parakeet-mlx)
 
-**Built with Claude Code** • [Implementation Plan](docs/plans/2026-02-11-minimal-stt-cli.md)
+## License
+
+This project follows the model's CC-BY-4.0 license.
