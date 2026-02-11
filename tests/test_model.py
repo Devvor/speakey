@@ -12,52 +12,48 @@ def test_model_wrapper_initialization():
 
     config = Config(device="cpu")
 
-    with patch("src.model.nemo_asr") as mock_nemo:
-        mock_model = Mock()
-        mock_nemo.models.ASRModel.from_pretrained.return_value = mock_model
+    with patch("src.backends.factory.BackendFactory.create_backend") as mock_create:
+        mock_backend = Mock()
+        mock_create.return_value = mock_backend
 
         wrapper = ModelWrapper(config)
 
         assert wrapper.config == config
-        assert wrapper.model == mock_model
-        mock_nemo.models.ASRModel.from_pretrained.assert_called_once_with(
-            model_name=config.model_name
-        )
+        assert wrapper.backend == mock_backend
+        mock_create.assert_called_once_with(config)
 
 
 def test_model_wrapper_transcribe_simple(config, temp_audio_file):
     """Test simple transcription without timestamps."""
     from src.model import ModelWrapper
 
-    with patch("src.model.nemo_asr") as mock_nemo:
-        mock_model = Mock()
-        mock_result = Mock()
-        mock_result.text = "test transcription"
-        mock_model.transcribe.return_value = [mock_result]
-        mock_nemo.models.ASRModel.from_pretrained.return_value = mock_model
+    with patch("src.backends.factory.BackendFactory.create_backend") as mock_create:
+        mock_backend = Mock()
+        mock_backend.transcribe.return_value = {"text": "test transcription"}
+        mock_create.return_value = mock_backend
 
         wrapper = ModelWrapper(config)
         result = wrapper.transcribe(temp_audio_file, timestamps=False)
 
         assert result["text"] == "test transcription"
         assert "timestamps" not in result
-        mock_model.transcribe.assert_called_once()
+        mock_backend.transcribe.assert_called_once_with(temp_audio_file, timestamps=False)
 
 
 def test_model_wrapper_transcribe_with_timestamps(config, temp_audio_file):
     """Test transcription with timestamps."""
     from src.model import ModelWrapper
 
-    with patch("src.model.nemo_asr") as mock_nemo:
-        mock_model = Mock()
-        mock_result = Mock()
-        mock_result.text = "test transcription"
-        mock_result.timestamp = {
-            "word": [{"start": 0.0, "end": 0.5, "word": "test"}],
-            "segment": [{"start": 0.0, "end": 1.0, "segment": "test transcription"}],
+    with patch("src.backends.factory.BackendFactory.create_backend") as mock_create:
+        mock_backend = Mock()
+        mock_backend.transcribe.return_value = {
+            "text": "test transcription",
+            "timestamps": {
+                "word": [{"start": 0.0, "end": 0.5, "word": "test"}],
+                "segment": [{"start": 0.0, "end": 1.0, "segment": "test transcription"}],
+            }
         }
-        mock_model.transcribe.return_value = [mock_result]
-        mock_nemo.models.ASRModel.from_pretrained.return_value = mock_model
+        mock_create.return_value = mock_backend
 
         wrapper = ModelWrapper(config)
         result = wrapper.transcribe(temp_audio_file, timestamps=True)
@@ -65,3 +61,4 @@ def test_model_wrapper_transcribe_with_timestamps(config, temp_audio_file):
         assert result["text"] == "test transcription"
         assert "word" in result["timestamps"]
         assert "segment" in result["timestamps"]
+        mock_backend.transcribe.assert_called_once_with(temp_audio_file, timestamps=True)
