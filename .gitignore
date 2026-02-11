@@ -41,3 +41,7 @@ htmlcov/
 
 # Claude
 .claude/
+
+# Git worktrees
+.worktrees/
+worktrees/
