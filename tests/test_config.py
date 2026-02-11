@@ -9,7 +9,7 @@ def test_config_defaults():
     """Test default configuration values."""
     config = Config()
 
-    assert config.model_name == "nvidia/parakeet-tdt-0.6b-v2"
+    assert config.model_name == "nvidia/parakeet-tdt-0.6b-v3"
     assert config.sample_rate == 16000
     assert config.include_timestamps is True
     assert ".wav" in config.supported_formats

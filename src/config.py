@@ -10,7 +10,7 @@ class Config:
     """Application configuration."""
 
     # Model settings
-    model_name: str = "nvidia/parakeet-tdt-0.6b-v2"
+    model_name: str = "nvidia/parakeet-tdt-0.6b-v3"
     device: str = "mps"  # mps for Mac, cuda for NVIDIA, cpu for fallback
 
     # Audio settings

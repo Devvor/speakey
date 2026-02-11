@@ -340,7 +340,7 @@ class Config:
     """Application configuration."""
 
     # Model settings
-    model_name: str = "nvidia/parakeet-tdt-0.6b-v2"
+    model_name: str = "nvidia/parakeet-tdt-0.6b-v3"
     device: str = "mps"  # mps for Mac, cuda for NVIDIA, cpu for fallback
 
     # Audio settings
@@ -456,7 +456,7 @@ def test_config_defaults():
     """Test default configuration values."""
     config = Config()
 
-    assert config.model_name == "nvidia/parakeet-tdt-0.6b-v2"
+    assert config.model_name == "nvidia/parakeet-tdt-0.6b-v3"
     assert config.sample_rate == 16000
     assert config.include_timestamps is True
     assert ".wav" in config.supported_formats
@@ -1560,7 +1560,7 @@ class MLXBackend(BaseBackend):
 
         Future implementation will:
         1. Import parakeet_mlx (from EliFuzz or senstella)
-        2. Initialize with model_name="nvidia/parakeet-tdt-0.6b-v2"
+        2. Initialize with model_name="nvidia/parakeet-tdt-0.6b-v3"
         3. Return initialized model instance
         """
         try:
@@ -1982,7 +1982,7 @@ parakeet-stt/
 
 ## Model Information
 
-- **Model:** nvidia/parakeet-tdt-0.6b-v2
+- **Model:** nvidia/parakeet-tdt-0.6b-v3
 - **Parameters:** 600 million
 - **Architecture:** FastConformer-TDT
 - **Word Error Rate:** 6.05% average
@@ -2017,7 +2017,7 @@ parakeet-stt transcribe audio.wav --device cpu
 
 ## References
 
-- [Parakeet TDT Model](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v2)
+- [Parakeet TDT Model](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3)
 - [NeMo Documentation](https://docs.nvidia.com/nemo-framework/)
 - [Apple MLX Framework](https://github.com/ml-explore/mlx)
 - [Parakeet MLX Implementation](https://github.com/EliFuzz/parakeet-mlx)
