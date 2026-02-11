@@ -16,14 +16,14 @@
 
 ## Branching Strategy
 
-**Three-phase branching approach:**
+**Four-phase branching approach:**
 
-- **Phase 1 Branch:** `phase-1-basic-nemo-implementation` (Tasks 1-3)
+- **Phase 1 Branch:** `phase-1-basic-nemo-implementation` (Tasks 1-3) ✅
   - Project setup and basic NeMo implementation
   - Branch from: `main`
   - Commits: Tasks 1, 2, 3
 
-- **Phase 2 Branch:** `phase-2-cli-interface` (Tasks 4-6)
+- **Phase 2 Branch:** `phase-2-cli-interface` (Tasks 4-6) ✅
   - CLI interface and file I/O
   - Branch from: `phase-1-basic-nemo-implementation`
   - Commits: Tasks 4, 5, 6
@@ -32,6 +32,11 @@
   - Apple Neural Engine optimization with MLX
   - Branch from: `phase-2-cli-interface`
   - Commits: Tasks 7, 8, 9, 10, 11
+
+- **Phase 4 Branch:** `phase-4-push-to-talk` (Tasks 12-17)
+  - Real-time push-to-talk recording
+  - Branch from: `phase-3-ane-optimization` (or `main` if Phase 3 incomplete)
+  - Commits: Tasks 12, 13, 14, 15, 16, 17
 
 **Commit Strategy:**
 - Each edit/commit requires explicit user permission before execution
@@ -51,12 +56,22 @@ parakeet-stt/
 │   ├── model.py                 # Model wrapper with backend selection
 │   ├── output.py                # Output formatting and file handling
 │   ├── cli.py                   # CLI application entry point
-│   └── backends/                # Backend implementations
-│       ├── __init__.py          # Backend package initialization
-│       ├── base.py              # Abstract base backend
-│       ├── nemo_backend.py      # NeMo/PyTorch backend
-│       ├── mlx_backend.py       # MLX/ANE backend (Apple Silicon)
-│       └── factory.py           # Automatic backend selection
+│   ├── backends/                # Backend implementations (Phase 3)
+│   │   ├── __init__.py          # Backend package initialization
+│   │   ├── base.py              # Abstract base backend
+│   │   ├── nemo_backend.py      # NeMo/PyTorch backend
+│   │   ├── mlx_backend.py       # MLX/ANE backend (Apple Silicon)
+│   │   └── factory.py           # Automatic backend selection
+│   └── ptt/                     # Push-to-talk module (Phase 4)
+│       ├── __init__.py          # PTT package initialization
+│       ├── app.py               # Main PTT application
+│       ├── controller.py        # Push-to-talk controller
+│       ├── hotkey.py            # Global hotkey listener
+│       ├── recorder.py          # Real-time audio recorder
+│       └── ui/                  # GUI components
+│           ├── __init__.py      # UI package initialization
+│           ├── overlay.py       # Status overlay window
+│           └── styles.py        # UI styling
 │
 ├── tests/                       # Test suite
 │   ├── __init__.py              # Test package initialization
@@ -65,10 +80,16 @@ parakeet-stt/
 │   ├── test_model.py            # Model wrapper tests
 │   ├── test_output.py           # Output handler tests
 │   ├── test_cli.py              # CLI tests
-│   ├── test_backends.py         # Backend abstraction tests
-│   ├── test_backend_factory.py  # Backend factory tests
-│   ├── test_mlx_backend.py      # MLX backend integration tests
+│   ├── test_backends.py         # Backend abstraction tests (Phase 3)
+│   ├── test_backend_factory.py  # Backend factory tests (Phase 3)
+│   ├── test_mlx_backend.py      # MLX backend integration tests (Phase 3)
 │   ├── test_integration.py      # End-to-end integration tests
+│   ├── test_ptt/                # Push-to-talk tests (Phase 4)
+│   │   ├── test_hotkey.py       # Hotkey listener tests
+│   │   ├── test_recorder.py     # Audio recorder tests
+│   │   ├── test_controller.py   # Controller tests
+│   │   ├── test_ui.py           # UI overlay tests
+│   │   └── test_app.py          # PTT app integration tests
 │   └── fixtures/                # Test fixtures
 │       └── sample_audio.wav     # Test audio file (copy of 2086-149220-0033.wav)
 │
@@ -87,9 +108,8 @@ parakeet-stt/
 ├── scripts/                     # Utility scripts
 │   └── verify_phase1.py         # Phase 1 verification script
 │
-├── requirements.txt             # Core dependencies (NeMo, PyTorch, Click)
-├── requirements-mlx.txt         # MLX dependencies for Apple Silicon
-├── pyproject.toml               # Project configuration and metadata
+├── requirements.txt             # Core dependencies (for backwards compatibility)
+├── pyproject.toml               # Project configuration with optional dependencies
 ├── .python-version              # Python version specification
 ├── .gitignore                   # Git ignore rules
 └── README.md                    # Project documentation
@@ -175,26 +195,17 @@ Create `.python-version`:
 
 **Step 2: Create requirements.txt**
 
-Create `requirements.txt`:
+Create `requirements.txt` (for backwards compatibility - pyproject.toml is preferred):
 ```txt
-# Core dependencies
+# Core dependencies (install with: pip install -e .)
+# For optional features, use: pip install -e .[mlx,ptt,dev]
+
 nemo-toolkit[asr]>=2.2.0
 torch>=2.0.0
 torchaudio>=2.0.0
-
-# CLI and utilities
 click>=8.1.0
 colorama>=0.4.6
 python-dotenv>=1.0.0
-
-# Testing
-pytest>=7.4.0
-pytest-cov>=4.1.0
-pytest-mock>=3.11.0
-
-# Development
-black>=23.0.0
-ruff>=0.1.0
 ```
 
 **Step 3: Create pyproject.toml**
@@ -213,7 +224,40 @@ requires-python = ">=3.10"
 dependencies = [
     "nemo-toolkit[asr]>=2.2.0",
     "torch>=2.0.0",
+    "torchaudio>=2.0.0",
     "click>=8.1.0",
+    "colorama>=0.4.6",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+# Phase 3: MLX backend for Apple Silicon
+mlx = [
+    "mlx>=0.20.0",
+    "librosa>=0.10.0",
+    "soundfile>=0.12.0",
+]
+
+# Phase 4: Push-to-talk real-time recording
+ptt = [
+    "pynput>=1.7.6",
+    "sounddevice>=0.4.6",
+    "numpy>=1.24.0",
+    "pyperclip>=1.8.2",
+]
+
+# Development dependencies
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.11.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+]
+
+# Install everything
+all = [
+    "parakeet-stt[mlx,ptt,dev]",
 ]
 
 [project.scripts]
@@ -310,10 +354,17 @@ Run:
 ```bash
 # Ensure venv is activated (you should see (venv) in your prompt)
 pip install --upgrade pip
-pip install -r requirements.txt
+
+# Install in editable mode with dev dependencies
+pip install -e .[dev]
+
+# Or using requirements.txt (backwards compatible)
+# pip install -r requirements.txt
 ```
 
 Expected: All dependencies install successfully within venv
+
+Note: `-e` installs in editable mode, `[dev]` includes testing/development tools
 
 **Step 7: Verify project structure**
 
@@ -1395,7 +1446,6 @@ git commit -m "docs: add MLX integration research"
 - Create: `src/backends/base.py`
 - Create: `src/backends/nemo_backend.py`
 - Create: `src/backends/mlx_backend.py`
-- Create: `requirements-mlx.txt`
 
 **Step 1: Create backend abstraction test**
 
@@ -1457,20 +1507,7 @@ def test_mlx_backend_initialization():
         assert hasattr(backend, "model")
 ```
 
-**Step 2: Create MLX requirements**
-
-Create `requirements-mlx.txt`:
-```txt
-# MLX dependencies for Apple Silicon
-mlx>=0.20.0
-parakeet-mlx>=0.1.0  # May need to install from GitHub
-
-# Optional audio processing
-librosa>=0.10.0
-soundfile>=0.12.0
-```
-
-**Step 3: Implement base backend**
+**Step 2: Implement base backend**
 
 Create `src/backends/__init__.py`:
 ```python
@@ -1530,7 +1567,7 @@ class BaseBackend(ABC):
         pass
 ```
 
-**Step 4: Refactor NeMo backend**
+**Step 3: Refactor NeMo backend**
 
 Create `src/backends/nemo_backend.py`:
 ```python
@@ -1587,7 +1624,7 @@ class NeMoBackend(BaseBackend):
         return result
 ```
 
-**Step 5: Implement MLX backend stub**
+**Step 4: Implement MLX backend stub**
 
 Create `src/backends/mlx_backend.py`:
 ```python
@@ -1671,7 +1708,7 @@ class MLXBackend(BaseBackend):
         )
 ```
 
-**Step 6: Run tests**
+**Step 5: Run tests**
 
 Run:
 ```bash
@@ -1683,10 +1720,10 @@ python -m pytest tests/test_backends.py -v
 
 Expected: Tests pass (MLX tests skipped if not installed)
 
-**Step 7: Commit**
+**Step 6: Commit**
 
 ```bash
-git add src/backends/ tests/test_backends.py requirements-mlx.txt
+git add src/backends/ tests/test_backends.py
 git commit -m "feat: add backend abstraction layer with NeMo and MLX stubs"
 ```
 
@@ -2145,7 +2182,6 @@ git commit -m "docs: add comprehensive README with usage guide"
 
 **Files:**
 - Modify: `src/backends/mlx_backend.py`
-- Modify: `requirements-mlx.txt`
 - Create: `tests/test_mlx_backend.py`
 - Create: `docs/research/mlx-api-investigation.md`
 
@@ -2187,22 +2223,22 @@ Create `docs/research/mlx-api-investigation.md`:
 [Document how to integrate with our backend]
 ```
 
-**Step 3: Update MLX requirements with correct package**
+**Step 3: Install MLX dependencies**
 
-Update `requirements-mlx.txt`:
-```txt
-# MLX dependencies for Apple Silicon
-mlx>=0.20.0
+Note: MLX dependencies are already defined in `pyproject.toml` under `[project.optional-dependencies]`.
 
-# Install parakeet-mlx from GitHub (if not on PyPI)
-# git+https://github.com/EliFuzz/parakeet-mlx.git
+If parakeet-mlx is not on PyPI, you may need to install from GitHub:
+```bash
+# Ensure venv is activated
+source venv/bin/activate
+
+# Install MLX extras
+pip install -e .[mlx]
+
+# If parakeet-mlx not available, install from GitHub
+# pip install git+https://github.com/EliFuzz/parakeet-mlx.git
 # OR
-# git+https://github.com/senstella/parakeet-mlx.git
-
-# Audio processing
-librosa>=0.10.0
-soundfile>=0.12.0
-numpy>=1.24.0
+# pip install git+https://github.com/senstella/parakeet-mlx.git
 ```
 
 **Step 4: Write MLX backend integration test**
@@ -2355,17 +2391,13 @@ Run:
 # Ensure venv is activated
 source venv/bin/activate  # If not already activated
 
-# Install MLX dependencies
-pip install -r requirements-mlx.txt
+# Install MLX dependencies (if not already installed)
+pip install -e .[mlx]
 
 # Run MLX-specific tests
 python -m pytest tests/test_mlx_backend.py -v -m slow
 
-# Test with the provided audio file (ensure PYTHONPATH is set)
-export PYTHONPATH="${PYTHONPATH}:."
-python -m src.cli transcribe 2086-149220-0033.wav
-
-# Or use the installed command
+# Test with the provided audio file
 parakeet-stt transcribe 2086-149220-0033.wav
 ```
 
@@ -2394,23 +2426,1500 @@ Expected: MLX backend shows 5-10x performance improvement on Apple Silicon
 **Step 8: Commit**
 
 ```bash
-git add src/backends/mlx_backend.py requirements-mlx.txt tests/test_mlx_backend.py docs/research/
+git add src/backends/mlx_backend.py tests/test_mlx_backend.py docs/research/
 git commit -m "feat: complete MLX backend integration for Apple Neural Engine"
 ```
 
 ---
 
+## Phase 4: Real-Time Push-to-Talk Recording
+
+**IMPORTANT:** Ensure your virtual environment is activated. You'll need to install additional dependencies for audio recording and GUI.
+
+### Overview
+
+Phase 4 transforms the application into an interactive push-to-talk transcription tool with:
+- Global hotkey monitoring (configurable: Option on Mac, Alt on Windows)
+- Real-time audio recording from microphone
+- Hold-duration threshold (default: 2 seconds before recording starts)
+- Visual feedback overlay (top-right corner)
+- Clipboard integration for instant access to transcribed text
+- Status transitions: Holding → Recording → Transcribing → Done
+
+### Architecture Changes
+
+```
+┌─────────────────────────────────────────────┐
+│         Push-to-Talk Controller              │
+│  (Hotkey Listener + Recording Manager)       │
+└──────────────────┬──────────────────────────┘
+                   │
+        ┏━━━━━━━━━━┻━━━━━━━━━━┓
+        ┃                     ┃
+  ┌─────▼─────┐        ┌─────▼─────┐
+  │   Audio   │        │    GUI    │
+  │ Recorder  │        │  Overlay  │
+  │           │        │           │
+  │(Mic Input)│        │ (Status)  │
+  └─────┬─────┘        └───────────┘
+        │
+  ┌─────▼─────┐
+  │   Model   │
+  │  Wrapper  │
+  │           │
+  │(Existing) │
+  └─────┬─────┘
+        │
+  ┌─────▼─────┐
+  │ Clipboard │
+  │  Manager  │
+  └───────────┘
+```
+
+### Dependencies
+
+Push-to-talk dependencies are defined in `pyproject.toml` under the `[project.optional-dependencies]` section:
+
+```toml
+[project.optional-dependencies]
+ptt = [
+    "pynput>=1.7.6",      # Global keyboard listener
+    "sounddevice>=0.4.6",  # Real-time audio recording
+    "numpy>=1.24.0",       # Audio array handling
+    "pyperclip>=1.8.2",    # Clipboard integration
+]
+```
+
+Install with:
+```bash
+pip install -e .[ptt]
+```
+
+Note: `tkinter` is used for the GUI overlay and is included with Python by default.
+
+### Updated Project Structure
+
+```
+parakeet-stt/
+├── src/
+│   ├── ptt/                      # NEW: Push-to-talk module
+│   │   ├── __init__.py
+│   │   ├── hotkey.py             # Global hotkey listener
+│   │   ├── recorder.py           # Real-time audio recorder
+│   │   ├── controller.py         # Push-to-talk controller
+│   │   └── ui/                   # GUI components
+│   │       ├── __init__.py
+│   │       ├── overlay.py        # Status overlay window
+│   │       └── styles.py         # UI styling
+│   ├── clipboard.py              # NEW: Clipboard manager
+│   ├── config.py                 # MODIFY: Add PTT settings
+│   └── ...
+│
+├── tests/
+│   ├── test_ptt/                 # NEW: PTT tests
+│   │   ├── test_hotkey.py
+│   │   ├── test_recorder.py
+│   │   ├── test_controller.py
+│   │   └── test_ui.py
+│   ├── test_clipboard.py
+│   └── ...
+│
+├── requirements-ptt.txt          # NEW: PTT dependencies
+└── ...
+```
+
+---
+
+### Task 12: Configuration for Push-to-Talk
+
+**Files:**
+- Modify: `src/config.py`
+- Create: `tests/test_ptt_config.py`
+
+**Step 1: Update configuration with PTT settings**
+
+Edit `src/config.py` to add PTT configuration:
+
+```python
+"""Configuration management for Parakeet STT."""
+
+import os
+import platform
+from dataclasses import dataclass, field
+from pathlib import Path
+
+
+@dataclass
+class PTTConfig:
+    """Push-to-talk configuration."""
+
+    # Hotkey settings
+    hotkey: str = field(default_factory=lambda: PTTConfig._default_hotkey())
+    hold_threshold: float = 2.0  # seconds to hold before recording starts
+
+    # Audio settings
+    sample_rate: int = 16000
+    channels: int = 1  # mono
+    chunk_size: int = 1024
+
+    # UI settings
+    overlay_position: str = "top-right"  # top-right, top-left, bottom-right, bottom-left
+    overlay_opacity: float = 0.9
+    show_waveform: bool = True
+
+    # Clipboard settings
+    auto_copy: bool = True
+
+    @staticmethod
+    def _default_hotkey() -> str:
+        """Get default hotkey based on platform."""
+        if platform.system() == "Darwin":
+            return "option"  # Mac
+        return "alt"  # Windows/Linux
+
+
+@dataclass
+class Config:
+    """Application configuration."""
+
+    # Model settings
+    model_name: str = "nvidia/parakeet-tdt-0.6b-v3"
+    device: str = "mps"  # mps for Mac, cuda for NVIDIA, cpu for fallback
+
+    # Audio settings
+    sample_rate: int = 16000
+    supported_formats: tuple = (".wav", ".flac")
+
+    # Output settings
+    output_dir: Path = Path("output")
+    include_timestamps: bool = True
+
+    # Push-to-talk settings
+    ptt: PTTConfig = field(default_factory=PTTConfig)
+
+    # Environment overrides
+    enable_mps_fallback: bool = os.getenv("PYTORCH_ENABLE_MPS_FALLBACK", "1") == "1"
+
+    def __post_init__(self):
+        """Ensure output directory exists."""
+        self.output_dir.mkdir(exist_ok=True)
+
+    @property
+    def is_mac(self) -> bool:
+        """Check if running on macOS."""
+        import platform
+
+        return platform.system() == "Darwin"
+
+    def get_device(self) -> str:
+        """Get appropriate device based on platform."""
+        if self.is_mac:
+            return "mps"
+        return "cuda" if self._cuda_available() else "cpu"
+
+    @staticmethod
+    def _cuda_available() -> bool:
+        """Check if CUDA is available."""
+        try:
+            import torch
+
+            return torch.cuda.is_available()
+        except ImportError:
+            return False
+```
+
+**Step 2: Write configuration tests**
+
+Create `tests/test_ptt_config.py`:
+
+```python
+"""Tests for push-to-talk configuration."""
+
+import pytest
+import platform
+from src.config import Config, PTTConfig
+
+
+def test_ptt_config_defaults():
+    """Test PTT configuration defaults."""
+    ptt = PTTConfig()
+
+    assert ptt.hold_threshold == 2.0
+    assert ptt.sample_rate == 16000
+    assert ptt.channels == 1
+    assert ptt.overlay_position == "top-right"
+    assert ptt.auto_copy is True
+
+
+def test_ptt_default_hotkey_mac():
+    """Test default hotkey on macOS."""
+    with pytest.mock.patch("platform.system", return_value="Darwin"):
+        ptt = PTTConfig()
+        assert ptt.hotkey == "option"
+
+
+def test_ptt_default_hotkey_windows():
+    """Test default hotkey on Windows."""
+    with pytest.mock.patch("platform.system", return_value="Windows"):
+        ptt = PTTConfig()
+        assert ptt.hotkey == "alt"
+
+
+def test_config_includes_ptt():
+    """Test main config includes PTT settings."""
+    config = Config()
+
+    assert hasattr(config, "ptt")
+    assert isinstance(config.ptt, PTTConfig)
+
+
+def test_ptt_custom_settings():
+    """Test custom PTT settings."""
+    ptt = PTTConfig(
+        hotkey="ctrl",
+        hold_threshold=3.0,
+        overlay_position="bottom-right",
+    )
+
+    assert ptt.hotkey == "ctrl"
+    assert ptt.hold_threshold == 3.0
+    assert ptt.overlay_position == "bottom-right"
+```
+
+**Step 3: Run tests**
+
+```bash
+# Ensure venv is activated
+source venv/bin/activate
+
+python -m pytest tests/test_ptt_config.py -v
+```
+
+Expected: All tests pass
+
+**Step 4: Commit**
+
+```bash
+git add src/config.py tests/test_ptt_config.py
+git commit -m "feat: add push-to-talk configuration settings"
+```
+
+---
+
+### Task 13: Real-Time Audio Recorder
+
+**Files:**
+- Create: `src/ptt/recorder.py`
+- Create: `tests/test_ptt/test_recorder.py`
+
+**Step 1: Install PTT dependencies**
+
+```bash
+# Ensure venv is activated
+source venv/bin/activate
+
+# Install push-to-talk extras
+pip install -e .[ptt]
+```
+
+**Step 2: Write recorder tests**
+
+Create `tests/test_ptt/test_recorder.py`:
+
+```python
+"""Tests for real-time audio recorder."""
+
+import pytest
+from pathlib import Path
+from unittest.mock import Mock, patch
+import numpy as np
+
+
+def test_recorder_initialization():
+    """Test recorder initializes correctly."""
+    from src.ptt.recorder import AudioRecorder
+    from src.config import Config
+
+    config = Config()
+    recorder = AudioRecorder(config)
+
+    assert recorder.config == config
+    assert recorder.is_recording is False
+    assert recorder.audio_buffer == []
+
+
+def test_recorder_start():
+    """Test starting audio recording."""
+    from src.ptt.recorder import AudioRecorder
+    from src.config import Config
+
+    config = Config()
+    recorder = AudioRecorder(config)
+
+    with patch("src.ptt.recorder.sd.InputStream") as mock_stream:
+        recorder.start()
+
+        assert recorder.is_recording is True
+        mock_stream.assert_called_once()
+
+
+def test_recorder_stop():
+    """Test stopping audio recording."""
+    from src.ptt.recorder import AudioRecorder
+    from src.config import Config
+
+    config = Config()
+    recorder = AudioRecorder(config)
+
+    with patch("src.ptt.recorder.sd.InputStream"):
+        recorder.start()
+        audio_data = recorder.stop()
+
+        assert recorder.is_recording is False
+        assert isinstance(audio_data, np.ndarray)
+
+
+def test_recorder_get_audio_file(tmp_path):
+    """Test saving recorded audio to file."""
+    from src.ptt.recorder import AudioRecorder
+    from src.config import Config
+
+    config = Config()
+    recorder = AudioRecorder(config)
+
+    # Simulate recording
+    recorder.audio_buffer = [np.array([0.1, 0.2, 0.3])]
+
+    output_file = tmp_path / "recording.wav"
+    recorder.save_audio(output_file)
+
+    assert output_file.exists()
+```
+
+**Step 3: Implement audio recorder**
+
+Create `src/ptt/__init__.py`:
+
+```python
+"""Push-to-talk module for real-time transcription."""
+
+__all__ = ["AudioRecorder", "HotkeyListener", "PTTController"]
+```
+
+Create `src/ptt/recorder.py`:
+
+```python
+"""Real-time audio recorder for push-to-talk."""
+
+import sounddevice as sd
+import numpy as np
+from pathlib import Path
+from typing import Optional
+import wave
+
+from ..config import Config
+
+
+class AudioRecorder:
+    """Records audio from microphone in real-time."""
+
+    def __init__(self, config: Config):
+        """Initialize audio recorder.
+
+        Args:
+            config: Application configuration
+        """
+        self.config = config
+        self.is_recording = False
+        self.audio_buffer = []
+        self.stream: Optional[sd.InputStream] = None
+
+    def start(self) -> None:
+        """Start recording audio from microphone."""
+        if self.is_recording:
+            return
+
+        self.audio_buffer = []
+        self.is_recording = True
+
+        # Create audio stream
+        self.stream = sd.InputStream(
+            samplerate=self.config.ptt.sample_rate,
+            channels=self.config.ptt.channels,
+            dtype=np.float32,
+            blocksize=self.config.ptt.chunk_size,
+            callback=self._audio_callback,
+        )
+        self.stream.start()
+
+    def stop(self) -> np.ndarray:
+        """Stop recording and return audio data.
+
+        Returns:
+            Audio data as numpy array
+        """
+        if not self.is_recording:
+            return np.array([])
+
+        self.is_recording = False
+
+        if self.stream:
+            self.stream.stop()
+            self.stream.close()
+            self.stream = None
+
+        # Concatenate all audio chunks
+        if self.audio_buffer:
+            audio_data = np.concatenate(self.audio_buffer, axis=0)
+        else:
+            audio_data = np.array([])
+
+        return audio_data
+
+    def _audio_callback(self, indata, frames, time, status):
+        """Callback for audio stream.
+
+        Args:
+            indata: Input audio data
+            frames: Number of frames
+            time: Time info
+            status: Status flags
+        """
+        if status:
+            print(f"Audio callback status: {status}")
+
+        if self.is_recording:
+            self.audio_buffer.append(indata.copy())
+
+    def save_audio(self, output_path: Path) -> None:
+        """Save recorded audio to WAV file.
+
+        Args:
+            output_path: Path to save audio file
+        """
+        if not self.audio_buffer:
+            return
+
+        audio_data = np.concatenate(self.audio_buffer, axis=0)
+
+        # Convert float32 to int16
+        audio_int16 = (audio_data * 32767).astype(np.int16)
+
+        # Save as WAV
+        with wave.open(str(output_path), 'w') as wf:
+            wf.setnchannels(self.config.ptt.channels)
+            wf.setsampwidth(2)  # 16-bit
+            wf.setframerate(self.config.ptt.sample_rate)
+            wf.writeframes(audio_int16.tobytes())
+
+    def get_duration(self) -> float:
+        """Get duration of recorded audio in seconds.
+
+        Returns:
+            Duration in seconds
+        """
+        if not self.audio_buffer:
+            return 0.0
+
+        total_frames = sum(len(chunk) for chunk in self.audio_buffer)
+        return total_frames / self.config.ptt.sample_rate
+```
+
+**Step 4: Run tests**
+
+```bash
+# Ensure venv is activated
+source venv/bin/activate
+
+python -m pytest tests/test_ptt/test_recorder.py -v
+```
+
+Expected: All tests pass
+
+**Step 5: Commit**
+
+```bash
+git add src/ptt/ tests/test_ptt/
+git commit -m "feat: add real-time audio recorder for microphone input"
+```
+
+---
+
+### Task 14: Global Hotkey Listener
+
+**Files:**
+- Create: `src/ptt/hotkey.py`
+- Create: `tests/test_ptt/test_hotkey.py`
+
+**Step 1: Write hotkey listener tests**
+
+Note: PTT dependencies (including pynput) should already be installed from Task 13.
+
+Create `tests/test_ptt/test_hotkey.py`:
+
+```python
+"""Tests for global hotkey listener."""
+
+import pytest
+from unittest.mock import Mock, patch
+import time
+
+
+def test_hotkey_listener_initialization():
+    """Test hotkey listener initializes."""
+    from src.ptt.hotkey import HotkeyListener
+    from src.config import Config
+
+    config = Config()
+    listener = HotkeyListener(config)
+
+    assert listener.config == config
+    assert listener.is_pressed is False
+
+
+def test_hotkey_listener_press_callback():
+    """Test press callback is called."""
+    from src.ptt.hotkey import HotkeyListener
+    from src.config import Config
+
+    config = Config()
+    listener = HotkeyListener(config)
+
+    press_called = False
+
+    def on_press():
+        nonlocal press_called
+        press_called = True
+
+    listener.on_press = on_press
+    listener._handle_press()
+
+    assert press_called is True
+
+
+def test_hotkey_listener_release_callback():
+    """Test release callback is called."""
+    from src.ptt.hotkey import HotkeyListener
+    from src.config import Config
+
+    config = Config()
+    listener = HotkeyListener(config)
+
+    release_called = False
+
+    def on_release():
+        nonlocal release_called
+        release_called = True
+
+    listener.on_release = on_release
+    listener._handle_release()
+
+    assert release_called is True
+
+
+def test_hotkey_listener_hold_duration():
+    """Test hold duration tracking."""
+    from src.ptt.hotkey import HotkeyListener
+    from src.config import Config
+
+    config = Config()
+    listener = HotkeyListener(config)
+
+    listener._handle_press()
+    time.sleep(0.1)
+    duration = listener.get_hold_duration()
+
+    assert duration >= 0.1
+```
+
+**Step 2: Implement hotkey listener**
+
+Create `src/ptt/hotkey.py`:
+
+```python
+"""Global hotkey listener for push-to-talk."""
+
+from pynput import keyboard
+from typing import Callable, Optional
+import time
+
+from ..config import Config
+
+
+class HotkeyListener:
+    """Listens for global hotkey press/release events."""
+
+    def __init__(self, config: Config):
+        """Initialize hotkey listener.
+
+        Args:
+            config: Application configuration
+        """
+        self.config = config
+        self.is_pressed = False
+        self.press_time: Optional[float] = None
+        self.listener: Optional[keyboard.Listener] = None
+
+        # Callbacks
+        self.on_press: Optional[Callable] = None
+        self.on_release: Optional[Callable] = None
+
+        # Parse hotkey
+        self.target_key = self._parse_hotkey(config.ptt.hotkey)
+
+    def _parse_hotkey(self, hotkey: str) -> keyboard.Key:
+        """Parse hotkey string to keyboard.Key.
+
+        Args:
+            hotkey: Hotkey name (e.g., 'option', 'alt', 'ctrl')
+
+        Returns:
+            Parsed keyboard.Key
+        """
+        hotkey_map = {
+            "option": keyboard.Key.alt,  # Option key on Mac is alt
+            "alt": keyboard.Key.alt,
+            "ctrl": keyboard.Key.ctrl,
+            "shift": keyboard.Key.shift,
+            "cmd": keyboard.Key.cmd,
+            "command": keyboard.Key.cmd,
+        }
+
+        return hotkey_map.get(hotkey.lower(), keyboard.Key.alt)
+
+    def start(self) -> None:
+        """Start listening for hotkey events."""
+        self.listener = keyboard.Listener(
+            on_press=self._on_key_press,
+            on_release=self._on_key_release,
+        )
+        self.listener.start()
+
+    def stop(self) -> None:
+        """Stop listening for hotkey events."""
+        if self.listener:
+            self.listener.stop()
+            self.listener = None
+
+    def _on_key_press(self, key):
+        """Handle key press event.
+
+        Args:
+            key: Pressed key
+        """
+        if key == self.target_key and not self.is_pressed:
+            self._handle_press()
+
+    def _on_key_release(self, key):
+        """Handle key release event.
+
+        Args:
+            key: Released key
+        """
+        if key == self.target_key and self.is_pressed:
+            self._handle_release()
+
+    def _handle_press(self) -> None:
+        """Handle hotkey press."""
+        self.is_pressed = True
+        self.press_time = time.time()
+
+        if self.on_press:
+            self.on_press()
+
+    def _handle_release(self) -> None:
+        """Handle hotkey release."""
+        self.is_pressed = False
+        self.press_time = None
+
+        if self.on_release:
+            self.on_release()
+
+    def get_hold_duration(self) -> float:
+        """Get current hold duration in seconds.
+
+        Returns:
+            Hold duration in seconds (0 if not pressed)
+        """
+        if not self.is_pressed or not self.press_time:
+            return 0.0
+
+        return time.time() - self.press_time
+```
+
+**Step 3: Run tests**
+
+```bash
+# Ensure venv is activated
+source venv/bin/activate
+
+python -m pytest tests/test_ptt/test_hotkey.py -v
+```
+
+Expected: All tests pass
+
+**Step 4: Commit**
+
+```bash
+git add src/ptt/hotkey.py tests/test_ptt/test_hotkey.py
+git commit -m "feat: add global hotkey listener for push-to-talk"
+```
+
+---
+
+### Task 15: Push-to-Talk Controller
+
+**Files:**
+- Create: `src/ptt/controller.py`
+- Create: `tests/test_ptt/test_controller.py`
+
+**Step 1: Write controller tests**
+
+Create `tests/test_ptt/test_controller.py`:
+
+```python
+"""Tests for push-to-talk controller."""
+
+import pytest
+from unittest.mock import Mock, patch
+import time
+
+
+def test_controller_initialization():
+    """Test controller initializes correctly."""
+    from src.ptt.controller import PTTController
+    from src.config import Config
+
+    config = Config()
+
+    with patch("src.ptt.controller.HotkeyListener"):
+        with patch("src.ptt.controller.AudioRecorder"):
+            with patch("src.ptt.controller.ModelWrapper"):
+                controller = PTTController(config)
+
+                assert controller.config == config
+                assert controller.state == "idle"
+
+
+def test_controller_state_transitions():
+    """Test state transitions: idle → holding → recording → transcribing → done."""
+    from src.ptt.controller import PTTController
+    from src.config import Config
+
+    config = Config()
+
+    with patch("src.ptt.controller.HotkeyListener"):
+        with patch("src.ptt.controller.AudioRecorder"):
+            with patch("src.ptt.controller.ModelWrapper"):
+                controller = PTTController(config)
+
+                # Idle → Holding
+                controller._on_hotkey_press()
+                assert controller.state == "holding"
+
+                # Holding → Recording (after threshold)
+                time.sleep(config.ptt.hold_threshold + 0.1)
+                assert controller.state == "recording"
+
+                # Recording → Transcribing
+                controller._on_hotkey_release()
+                assert controller.state == "transcribing"
+
+
+def test_controller_hold_threshold_not_met():
+    """Test that recording doesn't start if threshold not met."""
+    from src.ptt.controller import PTTController
+    from src.config import Config
+
+    config = Config()
+    config.ptt.hold_threshold = 2.0
+
+    with patch("src.ptt.controller.HotkeyListener"):
+        with patch("src.ptt.controller.AudioRecorder") as mock_recorder:
+            with patch("src.ptt.controller.ModelWrapper"):
+                controller = PTTController(config)
+
+                controller._on_hotkey_press()
+                time.sleep(0.1)  # Less than threshold
+                controller._on_hotkey_release()
+
+                # Should not have started recording
+                assert controller.state == "idle"
+                mock_recorder.return_value.start.assert_not_called()
+```
+
+**Step 2: Implement controller**
+
+Create `src/ptt/controller.py`:
+
+```python
+"""Push-to-talk controller coordinating hotkey, recording, and transcription."""
+
+import time
+from pathlib import Path
+from typing import Optional, Callable
+import tempfile
+
+from ..config import Config
+from ..model import ModelWrapper
+from .hotkey import HotkeyListener
+from .recorder import AudioRecorder
+
+
+class PTTController:
+    """Coordinates push-to-talk workflow."""
+
+    # States: idle → holding → recording → transcribing → done
+
+    def __init__(self, config: Config):
+        """Initialize push-to-talk controller.
+
+        Args:
+            config: Application configuration
+        """
+        self.config = config
+        self.state = "idle"
+
+        # Components
+        self.hotkey_listener = HotkeyListener(config)
+        self.recorder = AudioRecorder(config)
+        self.model = ModelWrapper(config)
+
+        # Timing
+        self.hold_start_time: Optional[float] = None
+        self.threshold_timer: Optional[float] = None
+
+        # Callbacks for UI updates
+        self.on_state_change: Optional[Callable[[str], None]] = None
+
+        # Setup hotkey callbacks
+        self.hotkey_listener.on_press = self._on_hotkey_press
+        self.hotkey_listener.on_release = self._on_hotkey_release
+
+    def start(self) -> None:
+        """Start the push-to-talk controller."""
+        self.hotkey_listener.start()
+        self._update_state("idle")
+
+    def stop(self) -> None:
+        """Stop the push-to-talk controller."""
+        self.hotkey_listener.stop()
+        if self.recorder.is_recording:
+            self.recorder.stop()
+
+    def _update_state(self, new_state: str) -> None:
+        """Update state and notify callback.
+
+        Args:
+            new_state: New state name
+        """
+        self.state = new_state
+
+        if self.on_state_change:
+            self.on_state_change(new_state)
+
+    def _on_hotkey_press(self) -> None:
+        """Handle hotkey press event."""
+        if self.state != "idle":
+            return
+
+        self.hold_start_time = time.time()
+        self._update_state("holding")
+
+        # Start threshold timer
+        self._check_threshold()
+
+    def _check_threshold(self) -> None:
+        """Check if hold threshold is met and start recording."""
+        if self.state != "holding":
+            return
+
+        if not self.hold_start_time:
+            return
+
+        hold_duration = time.time() - self.hold_start_time
+
+        if hold_duration >= self.config.ptt.hold_threshold:
+            # Threshold met, start recording
+            self._start_recording()
+        else:
+            # Check again after a short delay
+            import threading
+            threading.Timer(0.1, self._check_threshold).start()
+
+    def _start_recording(self) -> None:
+        """Start audio recording."""
+        self._update_state("recording")
+        self.recorder.start()
+
+    def _on_hotkey_release(self) -> None:
+        """Handle hotkey release event."""
+        if self.state == "holding":
+            # Released before threshold - cancel
+            self.hold_start_time = None
+            self._update_state("idle")
+
+        elif self.state == "recording":
+            # Stop recording and transcribe
+            self._stop_recording()
+
+    def _stop_recording(self) -> None:
+        """Stop recording and start transcription."""
+        audio_data = self.recorder.stop()
+
+        if len(audio_data) == 0:
+            self._update_state("idle")
+            return
+
+        self._update_state("transcribing")
+
+        # Save audio to temporary file
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
+            tmp_path = Path(tmp.name)
+
+        self.recorder.save_audio(tmp_path)
+
+        # Transcribe
+        try:
+            result = self.model.transcribe(tmp_path, timestamps=False)
+            transcription = result["text"]
+
+            # Handle transcription result
+            self._on_transcription_complete(transcription)
+
+        finally:
+            # Clean up temp file
+            tmp_path.unlink()
+
+    def _on_transcription_complete(self, text: str) -> None:
+        """Handle completed transcription.
+
+        Args:
+            text: Transcribed text
+        """
+        # Copy to clipboard if enabled
+        if self.config.ptt.auto_copy:
+            self._copy_to_clipboard(text)
+
+        self._update_state("done")
+
+        # Return to idle after brief delay
+        import threading
+        threading.Timer(2.0, lambda: self._update_state("idle")).start()
+
+    def _copy_to_clipboard(self, text: str) -> None:
+        """Copy text to clipboard.
+
+        Args:
+            text: Text to copy
+        """
+        try:
+            import pyperclip
+            pyperclip.copy(text)
+        except ImportError:
+            print("Warning: pyperclip not installed, clipboard not available")
+```
+
+**Step 3: Run tests**
+
+```bash
+# Ensure venv is activated
+source venv/bin/activate
+
+python -m pytest tests/test_ptt/test_controller.py -v
+```
+
+Expected: All tests pass
+
+Note: pyperclip is already installed as part of the PTT extras from Task 13.
+
+**Step 4: Commit**
+
+```bash
+git add src/ptt/controller.py tests/test_ptt/test_controller.py
+git commit -m "feat: add push-to-talk controller with state management"
+```
+
+---
+
+### Task 16: GUI Status Overlay
+
+**Files:**
+- Create: `src/ptt/ui/overlay.py`
+- Create: `src/ptt/ui/styles.py`
+- Create: `tests/test_ptt/test_ui.py`
+
+**Step 1: Write UI tests**
+
+Create `tests/test_ptt/test_ui.py`:
+
+```python
+"""Tests for GUI overlay."""
+
+import pytest
+from unittest.mock import Mock, patch
+
+
+def test_overlay_initialization():
+    """Test overlay window initializes."""
+    from src.ptt.ui.overlay import StatusOverlay
+    from src.config import Config
+
+    config = Config()
+
+    with patch("tkinter.Tk"):
+        overlay = StatusOverlay(config)
+
+        assert overlay.config == config
+
+
+def test_overlay_state_display():
+    """Test overlay displays different states."""
+    from src.ptt.ui.overlay import StatusOverlay
+    from src.config import Config
+
+    config = Config()
+
+    with patch("tkinter.Tk"):
+        overlay = StatusOverlay(config)
+
+        # Test different states
+        overlay.update_state("idle")
+        overlay.update_state("holding")
+        overlay.update_state("recording")
+        overlay.update_state("transcribing")
+        overlay.update_state("done")
+
+
+def test_overlay_positioning():
+    """Test overlay positions correctly."""
+    from src.ptt.ui.overlay import StatusOverlay
+    from src.config import Config
+
+    config = Config()
+    config.ptt.overlay_position = "top-right"
+
+    with patch("tkinter.Tk") as mock_tk:
+        overlay = StatusOverlay(config)
+
+        # Verify window attributes set for top-right
+        assert config.ptt.overlay_position == "top-right"
+```
+
+**Step 2: Implement overlay styling**
+
+Create `src/ptt/ui/__init__.py`:
+
+```python
+"""UI components for push-to-talk."""
+
+__all__ = ["StatusOverlay"]
+```
+
+Create `src/ptt/ui/styles.py`:
+
+```python
+"""UI styling for status overlay."""
+
+# State colors
+STATE_COLORS = {
+    "idle": "#6c757d",        # Gray
+    "holding": "#ffc107",     # Yellow/amber
+    "recording": "#dc3545",   # Red
+    "transcribing": "#0d6efd",  # Blue
+    "done": "#198754",        # Green
+}
+
+# State messages
+STATE_MESSAGES = {
+    "idle": "Ready",
+    "holding": "Hold to record...",
+    "recording": "● Recording",
+    "transcribing": "Transcribing...",
+    "done": "✓ Copied to clipboard",
+}
+
+# Window dimensions
+WINDOW_WIDTH = 280
+WINDOW_HEIGHT = 80
+PADDING = 20
+
+# Font settings
+FONT_FAMILY = "SF Pro Display" if True else "Segoe UI"  # Mac vs Windows
+FONT_SIZE = 14
+FONT_WEIGHT = "bold"
+```
+
+Create `src/ptt/ui/overlay.py`:
+
+```python
+"""Status overlay window for push-to-talk."""
+
+import tkinter as tk
+from typing import Optional
+
+from ...config import Config
+from .styles import STATE_COLORS, STATE_MESSAGES, WINDOW_WIDTH, WINDOW_HEIGHT, PADDING
+
+
+class StatusOverlay:
+    """Floating status overlay window."""
+
+    def __init__(self, config: Config):
+        """Initialize status overlay.
+
+        Args:
+            config: Application configuration
+        """
+        self.config = config
+        self.window: Optional[tk.Tk] = None
+        self.label: Optional[tk.Label] = None
+        self.current_state = "idle"
+
+        self._create_window()
+
+    def _create_window(self) -> None:
+        """Create overlay window."""
+        self.window = tk.Tk()
+
+        # Window properties
+        self.window.title("Parakeet STT")
+        self.window.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}")
+        self.window.overrideredirect(True)  # Remove window decorations
+        self.window.attributes("-topmost", True)  # Always on top
+        self.window.attributes("-alpha", self.config.ptt.overlay_opacity)
+
+        # Position window
+        self._position_window()
+
+        # Create label
+        self.label = tk.Label(
+            self.window,
+            text=STATE_MESSAGES["idle"],
+            font=("SF Pro Display", 14, "bold"),
+            fg="white",
+            bg=STATE_COLORS["idle"],
+            padx=PADDING,
+            pady=PADDING,
+        )
+        self.label.pack(fill=tk.BOTH, expand=True)
+
+        # Start hidden
+        self.hide()
+
+    def _position_window(self) -> None:
+        """Position window based on configuration."""
+        screen_width = self.window.winfo_screenwidth()
+        screen_height = self.window.winfo_screenheight()
+
+        position = self.config.ptt.overlay_position
+        margin = 20
+
+        if position == "top-right":
+            x = screen_width - WINDOW_WIDTH - margin
+            y = margin
+        elif position == "top-left":
+            x = margin
+            y = margin
+        elif position == "bottom-right":
+            x = screen_width - WINDOW_WIDTH - margin
+            y = screen_height - WINDOW_HEIGHT - margin
+        elif position == "bottom-left":
+            x = margin
+            y = screen_height - WINDOW_HEIGHT - margin
+        else:
+            # Default to top-right
+            x = screen_width - WINDOW_WIDTH - margin
+            y = margin
+
+        self.window.geometry(f"+{x}+{y}")
+
+    def update_state(self, state: str) -> None:
+        """Update overlay to show new state.
+
+        Args:
+            state: New state name
+        """
+        self.current_state = state
+
+        if state == "idle":
+            self.hide()
+        else:
+            self.show()
+
+            # Update label
+            if self.label:
+                self.label.config(
+                    text=STATE_MESSAGES.get(state, state),
+                    bg=STATE_COLORS.get(state, "#6c757d"),
+                )
+
+    def show(self) -> None:
+        """Show overlay window."""
+        if self.window:
+            self.window.deiconify()
+            self.window.update()
+
+    def hide(self) -> None:
+        """Hide overlay window."""
+        if self.window:
+            self.window.withdraw()
+
+    def start(self) -> None:
+        """Start overlay main loop."""
+        if self.window:
+            self.window.mainloop()
+
+    def stop(self) -> None:
+        """Stop overlay and close window."""
+        if self.window:
+            self.window.quit()
+            self.window.destroy()
+```
+
+**Step 3: Run tests**
+
+```bash
+# Ensure venv is activated
+source venv/bin/activate
+
+python -m pytest tests/test_ptt/test_ui.py -v
+```
+
+Expected: All tests pass
+
+**Step 4: Commit**
+
+```bash
+git add src/ptt/ui/ tests/test_ptt/test_ui.py
+git commit -m "feat: add GUI status overlay for push-to-talk feedback"
+```
+
+---
+
+### Task 17: Main PTT Application
+
+**Files:**
+- Create: `src/ptt/app.py`
+- Modify: `src/cli.py`
+- Create: `tests/test_ptt/test_app.py`
+
+**Step 1: Write app tests**
+
+Create `tests/test_ptt/test_app.py`:
+
+```python
+"""Tests for PTT application."""
+
+import pytest
+from unittest.mock import Mock, patch
+
+
+def test_ptt_app_initialization():
+    """Test PTT app initializes all components."""
+    from src.ptt.app import PTTApp
+    from src.config import Config
+
+    config = Config()
+
+    with patch("src.ptt.app.PTTController"):
+        with patch("src.ptt.app.StatusOverlay"):
+            app = PTTApp(config)
+
+            assert app.config == config
+
+
+def test_ptt_app_start_stop():
+    """Test app start and stop."""
+    from src.ptt.app import PTTApp
+    from src.config import Config
+
+    config = Config()
+
+    with patch("src.ptt.app.PTTController") as mock_controller:
+        with patch("src.ptt.app.StatusOverlay") as mock_overlay:
+            app = PTTApp(config)
+
+            app.start()
+            mock_controller.return_value.start.assert_called_once()
+
+            app.stop()
+            mock_controller.return_value.stop.assert_called_once()
+```
+
+**Step 2: Implement PTT app**
+
+Create `src/ptt/app.py`:
+
+```python
+"""Main push-to-talk application."""
+
+import threading
+from typing import Optional
+
+from ..config import Config
+from .controller import PTTController
+from .ui.overlay import StatusOverlay
+
+
+class PTTApp:
+    """Main push-to-talk application."""
+
+    def __init__(self, config: Config):
+        """Initialize PTT application.
+
+        Args:
+            config: Application configuration
+        """
+        self.config = config
+
+        # Components
+        self.controller = PTTController(config)
+        self.overlay = StatusOverlay(config)
+
+        # Connect controller state changes to overlay
+        self.controller.on_state_change = self.overlay.update_state
+
+    def start(self) -> None:
+        """Start the PTT application."""
+        print("Starting Parakeet STT Push-to-Talk...")
+        print(f"Hotkey: {self.config.ptt.hotkey}")
+        print(f"Hold threshold: {self.config.ptt.hold_threshold}s")
+        print("Press Ctrl+C to quit\n")
+
+        # Start controller in background thread
+        controller_thread = threading.Thread(target=self.controller.start, daemon=True)
+        controller_thread.start()
+
+        # Start overlay (blocking - runs main loop)
+        try:
+            self.overlay.start()
+        except KeyboardInterrupt:
+            self.stop()
+
+    def stop(self) -> None:
+        """Stop the PTT application."""
+        print("\nStopping Parakeet STT...")
+        self.controller.stop()
+        self.overlay.stop()
+
+
+def main():
+    """Main entry point for PTT app."""
+    from ..config import Config
+
+    config = Config()
+    app = PTTApp(config)
+
+    try:
+        app.start()
+    except KeyboardInterrupt:
+        app.stop()
+
+
+if __name__ == "__main__":
+    main()
+```
+
+**Step 3: Add PTT command to CLI**
+
+Edit `src/cli.py` to add PTT command:
+
+```python
+@main.command()
+@click.option(
+    "--hotkey",
+    type=str,
+    default=None,
+    help="Hotkey to use (option/alt/ctrl)",
+)
+@click.option(
+    "--threshold",
+    type=float,
+    default=2.0,
+    help="Hold duration threshold in seconds",
+)
+@click.option(
+    "--position",
+    type=click.Choice(["top-right", "top-left", "bottom-right", "bottom-left"]),
+    default="top-right",
+    help="Overlay position",
+)
+def ptt(hotkey: str, threshold: float, position: str):
+    """Start push-to-talk mode for real-time transcription."""
+    from .ptt.app import PTTApp
+    from .ptt import PTTConfig
+
+    # Create configuration
+    config = Config()
+
+    # Override PTT settings if provided
+    if hotkey:
+        config.ptt.hotkey = hotkey
+    config.ptt.hold_threshold = threshold
+    config.ptt.overlay_position = position
+
+    # Start PTT app
+    app = PTTApp(config)
+    app.start()
+```
+
+**Step 4: Run tests**
+
+```bash
+# Ensure venv is activated
+source venv/bin/activate
+
+python -m pytest tests/test_ptt/ -v
+```
+
+Expected: All tests pass
+
+**Step 5: Test PTT app manually**
+
+```bash
+# Ensure venv is activated
+source venv/bin/activate
+
+# Start PTT mode
+parakeet-stt ptt
+
+# Or with custom settings
+parakeet-stt ptt --hotkey alt --threshold 1.5 --position bottom-right
+```
+
+Expected:
+1. Overlay appears in top-right corner
+2. Hold Option/Alt key
+3. After 2 seconds, overlay shows "Recording"
+4. Speak into microphone
+5. Release key
+6. Overlay shows "Transcribing..."
+7. Overlay shows "✓ Copied to clipboard"
+8. Text is in clipboard
+
+**Step 6: Commit**
+
+```bash
+git add src/ptt/app.py src/cli.py tests/test_ptt/test_app.py
+git commit -m "feat: add push-to-talk application with real-time transcription"
+```
+
+Note: PTT dependencies are already defined in `pyproject.toml` from Task 1. No separate requirements file needed.
+
+---
+
 ## Summary
 
-This plan creates a minimal STT CLI application in three phases with **MLX Framework** as the primary optimization target:
+This plan creates a minimal STT CLI application in four phases with **MLX Framework** as the primary optimization target:
 
-**Phase 1: Basic Implementation**
+**Phase 1: Basic Implementation** ✅
 - Project structure with proper configuration
 - NeMo model wrapper with PyTorch MPS support
 - Unit tests for core functionality
 - Uses `2086-149220-0033.wav` for testing
 
-**Phase 2: CLI Interface**
+**Phase 2: CLI Interface** ✅
 - File output handler for transcription results
 - Click-based CLI with colored output
 - Integration tests with real audio (2086-149220-0033.wav)
@@ -2422,6 +3931,15 @@ This plan creates a minimal STT CLI application in three phases with **MLX Frame
 - **Task 11: Complete MLX integration** (primary deliverable)
 - Comprehensive documentation
 
+**Phase 4: Real-Time Push-to-Talk** 🆕
+- Global hotkey listener (Option/Alt key)
+- Real-time audio recording from microphone
+- Hold-duration threshold (default 2 seconds)
+- Push-to-talk state management
+- GUI status overlay (top-right corner)
+- Clipboard integration
+- Visual feedback for all states
+
 **Key Decisions:**
 - **MLX Framework**: Primary approach for Apple Silicon optimization
 - TDD approach with unit tests before implementation
@@ -2431,18 +3949,30 @@ This plan creates a minimal STT CLI application in three phases with **MLX Frame
 - Using provided audio file (2086-149220-0033.wav) for all testing
 
 **Success Criteria:**
+
+*Phase 1-2 (Complete):*
 1. ✅ CLI app transcribes audio to .txt files
 2. ✅ Works with NeMo backend (CPU/GPU fallback)
-3. ✅ MLX backend achieves 5-10x speedup on Apple Silicon
-4. ✅ Automatic backend selection (MLX on Mac, NeMo elsewhere)
-5. ✅ All tests pass with real audio
+
+*Phase 3 (MLX):*
+3. ⏳ MLX backend achieves 5-10x speedup on Apple Silicon
+4. ⏳ Automatic backend selection (MLX on Mac, NeMo elsewhere)
+5. ⏳ All tests pass with real audio
+
+*Phase 4 (Push-to-Talk):*
+6. ⏳ Global hotkey detection (Option/Alt)
+7. ⏳ Hold threshold works (2 seconds default)
+8. ⏳ Real-time recording and transcription
+9. ⏳ GUI overlay shows all states correctly
+10. ⏳ Text automatically copies to clipboard
 
 **Next Steps After This Plan:**
 1. Performance optimization of MLX backend
-2. Add batch processing for multiple files
-3. Add real-time audio streaming support
-4. Cross-platform testing (Mac/Linux/Windows)
-5. Package as standalone executable
+2. Add waveform visualization in overlay
+3. Add audio level meter during recording
+4. Add keyboard shortcuts for settings
+5. Add system tray icon
+6. Package as standalone executable (PyInstaller/py2app)
 
 ---
 
