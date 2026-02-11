@@ -19,7 +19,6 @@ models/
 
 # Output files
 output/
-*.txt
 
 # IDE
 .vscode/

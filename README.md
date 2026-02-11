@@ -42,7 +42,7 @@ parakeet-stt/
 
 ## 🛠️ Technology Stack
 
-- **Model:** [nvidia/parakeet-tdt-0.6b-v2](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v2) (FastConformer-TDT)
+- **Model:** [nvidia/parakeet-tdt-0.6b-v3](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3) (FastConformer-TDT)
 - **Frameworks:**
   - [NeMo Toolkit](https://github.com/NVIDIA/NeMo) for baseline implementation
   - [MLX](https://github.com/ml-explore/mlx) for Apple Silicon optimization
@@ -118,7 +118,7 @@ Segment-level:
 
 ## 🔬 Model Information
 
-- **Model:** nvidia/parakeet-tdt-0.6b-v2
+- **Model:** nvidia/parakeet-tdt-0.6b-v3
 - **Parameters:** 600 million
 - **Architecture:** FastConformer-TDT with full attention
 - **Word Error Rate:** 6.05% average across benchmarks
@@ -136,7 +136,7 @@ This project prioritizes the **MLX Framework** for Apple Silicon optimization:
 
 ## 🔗 References
 
-- [Parakeet TDT Model](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v2) - HuggingFace model page
+- [Parakeet TDT Model](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3) - HuggingFace model page
 - [NeMo Framework](https://docs.nvidia.com/nemo-framework/) - NVIDIA's toolkit
 - [Apple MLX](https://github.com/ml-explore/mlx) - Apple's ML framework
 - [parakeet-mlx](https://github.com/EliFuzz/parakeet-mlx) - MLX implementation

@@ -1,13 +1,18 @@
-# Parakeet TDT 0.6B V2 Model Overview
+# Parakeet TDT 0.6B V3 Model Overview
 
 ## Model Information
 
-**Model:** nvidia/parakeet-tdt-0.6b-v2
+**Model:** nvidia/parakeet-tdt-0.6b-v3
 **Type:** Speech-to-Text (Automatic Speech Recognition)
 **Architecture:** FastConformer-TDT with full attention
 **Parameters:** 600 million
 **License:** CC-BY-4.0
-**Runtime:** NeMo 2.2
+**Runtime:** NeMo 2.2+
+**Languages:** 25 European languages with automatic detection
+
+### Supported Languages
+
+Bulgarian (bg), Croatian (hr), Czech (cs), Danish (da), Dutch (nl), English (en), Estonian (et), Finnish (fi), French (fr), German (de), Greek (el), Hungarian (hu), Italian (it), Latvian (lv), Lithuanian (lt), Maltese (mt), Polish (pl), Portuguese (pt), Romanian (ro), Slovak (sk), Slovenian (sl), Spanish (es), Swedish (sv), Russian (ru), Ukrainian (uk)
 
 ## Installation
 
@@ -21,7 +26,7 @@ pip install -U nemo_toolkit["asr"]
 import nemo.collections.asr as nemo_asr
 
 asr_model = nemo_asr.models.ASRModel.from_pretrained(
-    model_name="nvidia/parakeet-tdt-0.6b-v2"
+    model_name="nvidia/parakeet-tdt-0.6b-v3"
 )
 ```
 
@@ -86,9 +91,9 @@ for stamp in segment_timestamps:
 
 ## Resources
 
-- **HuggingFace Page:** https://huggingface.co/nvidia/parakeet-tdt-0.6b-v2
+- **HuggingFace Page:** https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3
 - **Documentation:** [NeMo ASR Models](https://docs.nvidia.com/deeplearning/nemo/user-guide/docs/en/main/asr/models.html)
-- **Demo:** [HuggingFace Spaces](https://huggingface.co/spaces/nvidia/parakeet-tdt-0.6b-v2)
+- **Demo:** [HuggingFace Spaces](https://huggingface.co/spaces/nvidia/parakeet-tdt-0.6b-v3)
 
 ## Notes for Mac ANE Implementation
 

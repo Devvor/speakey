@@ -1,0 +1,24 @@
+# Core dependencies
+# Pin versions to avoid protobuf/onnx conflicts
+nemo-toolkit[asr]==2.5.0
+torch>=2.0.0
+torchaudio>=2.0.0
+
+# Dependency version constraints for NeMo compatibility
+protobuf~=5.29.6  # NeMo requires protobuf 5.x
+onnx<1.19         # ONNX 1.19+ requires protobuf 6+ (incompatible with NeMo)
+numpy<2.4         # Numba requires numpy <2.4
+
+# CLI and utilities
+click>=8.1.0
+colorama>=0.4.6
+python-dotenv>=1.0.0
+
+# Testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-mock>=3.11.0
+
+# Development
+black>=23.0.0
+ruff>=0.1.0
