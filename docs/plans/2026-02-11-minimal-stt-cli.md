@@ -12,6 +12,33 @@
 
 ---
 
+## Branching Strategy
+
+**Three-phase branching approach:**
+
+- **Phase 1 Branch:** `phase-1-basic-nemo-implementation` (Tasks 1-3)
+  - Project setup and basic NeMo implementation
+  - Branch from: `main`
+  - Commits: Tasks 1, 2, 3
+
+- **Phase 2 Branch:** `phase-2-cli-interface` (Tasks 4-6)
+  - CLI interface and file I/O
+  - Branch from: `phase-1-basic-nemo-implementation`
+  - Commits: Tasks 4, 5, 6
+
+- **Phase 3 Branch:** `phase-3-ane-optimization` (Tasks 7-11)
+  - Apple Neural Engine optimization with MLX
+  - Branch from: `phase-2-cli-interface`
+  - Commits: Tasks 7, 8, 9, 10, 11
+
+**Commit Strategy:**
+- Each edit/commit requires explicit user permission before execution
+- All commits include descriptive messages following conventional commit format
+- Each phase ends with a review before proceeding to next phase
+- Final merge strategy to be determined at completion
+
+---
+
 ## Project Structure
 
 ```
