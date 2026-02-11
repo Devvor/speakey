@@ -10,6 +10,8 @@
 
 **Test Audio:** Using `tests/fixtures/sample_audio.wav` for integration testing.
 
+**⚠️ IMPORTANT - Virtual Environment:** All commands in this plan must be executed within an activated virtual environment to avoid conflicts with global Python packages. Task 1 includes venv setup, and subsequent tasks include reminders to ensure venv is activated.
+
 ---
 
 ## Branching Strategy
@@ -154,6 +156,8 @@ parakeet-stt/
 
 ## Phase 1: Project Setup and Basic NeMo Implementation
 
+**IMPORTANT:** All commands in this phase should be run within the activated virtual environment to avoid conflicts with global Python packages.
+
 ### Task 1: Project Structure and Dependencies
 
 **Files:**
@@ -282,18 +286,48 @@ htmlcov/
 .env.local
 ```
 
-**Step 5: Verify project structure**
+**Step 5: Create and activate virtual environment**
+
+Run:
+```bash
+# Create virtual environment
+python3 -m venv venv
+
+# Activate virtual environment
+source venv/bin/activate  # macOS/Linux
+# OR on Windows: venv\Scripts\activate
+
+# Verify venv is active
+which python
+python --version
+```
+
+Expected: Python path points to `venv/bin/python` and version is 3.10+
+
+**Step 6: Install dependencies**
+
+Run:
+```bash
+# Ensure venv is activated (you should see (venv) in your prompt)
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+Expected: All dependencies install successfully within venv
+
+**Step 7: Verify project structure**
 
 Run:
 ```bash
 ls -la
 cat requirements.txt
 cat pyproject.toml
+pip list  # Verify installed packages
 ```
 
-Expected: Files created with correct content
+Expected: Files created with correct content, packages installed in venv
 
-**Step 6: Commit**
+**Step 8: Commit**
 
 ```bash
 git add requirements.txt pyproject.toml .python-version .gitignore
@@ -494,6 +528,9 @@ def test_config_get_device(config):
 
 Run:
 ```bash
+# Ensure venv is activated (should see (venv) in prompt)
+source venv/bin/activate  # If not already activated
+
 python -m pytest tests/test_config.py -v
 ```
 
@@ -591,6 +628,9 @@ def test_model_wrapper_transcribe_with_timestamps(config, temp_audio_file):
 
 Run:
 ```bash
+# Ensure venv is activated
+source venv/bin/activate  # If not already activated
+
 python -m pytest tests/test_model.py -v
 ```
 
@@ -672,6 +712,9 @@ class ModelWrapper:
 
 Run:
 ```bash
+# Ensure venv is activated
+source venv/bin/activate  # If not already activated
+
 python -m pytest tests/test_model.py -v
 ```
 
@@ -687,6 +730,8 @@ git commit -m "feat: add model wrapper with MPS backend support"
 ---
 
 ## Phase 2: CLI Interface and File I/O
+
+**IMPORTANT:** Ensure your virtual environment is activated before running any commands in this phase.
 
 ### Task 4: File Output Handler
 
@@ -759,6 +804,9 @@ def test_generate_output_filename():
 
 Run:
 ```bash
+# Ensure venv is activated
+source venv/bin/activate  # If not already activated
+
 python -m pytest tests/test_output.py -v
 ```
 
@@ -857,6 +905,9 @@ class OutputHandler:
 
 Run:
 ```bash
+# Ensure venv is activated
+source venv/bin/activate  # If not already activated
+
 python -m pytest tests/test_output.py -v
 ```
 
@@ -948,6 +999,9 @@ def test_cli_transcribe_file_not_found():
 
 Run:
 ```bash
+# Ensure venv is activated
+source venv/bin/activate  # If not already activated
+
 python -m pytest tests/test_cli.py -v
 ```
 
@@ -1068,6 +1122,9 @@ if __name__ == "__main__":
 
 Run:
 ```bash
+# Ensure venv is activated
+source venv/bin/activate  # If not already activated
+
 python -m pytest tests/test_cli.py -v
 ```
 
@@ -1077,6 +1134,9 @@ Expected: All tests pass
 
 Run:
 ```bash
+# Ensure venv is activated
+source venv/bin/activate  # If not already activated
+
 # Make sure src is in Python path
 export PYTHONPATH="${PYTHONPATH}:."
 python -m src.cli --help
@@ -1178,6 +1238,9 @@ markers = [
 
 Run:
 ```bash
+# Ensure venv is activated
+source venv/bin/activate  # If not already activated
+
 python -m pytest tests/test_integration.py -v -m slow
 ```
 
@@ -1193,6 +1256,8 @@ git commit -m "test: add integration test with real audio"
 ---
 
 ## Phase 3: Apple Neural Engine Optimization
+
+**IMPORTANT:** Ensure your virtual environment is activated. You may need to install additional MLX dependencies in Phase 3.
 
 ### Task 7: Research MLX Integration
 
@@ -1610,6 +1675,9 @@ class MLXBackend(BaseBackend):
 
 Run:
 ```bash
+# Ensure venv is activated
+source venv/bin/activate  # If not already activated
+
 python -m pytest tests/test_backends.py -v
 ```
 
@@ -1686,6 +1754,9 @@ def test_backend_factory_fallback_to_nemo():
 
 Run:
 ```bash
+# Ensure venv is activated
+source venv/bin/activate  # If not already activated
+
 python -m pytest tests/test_backend_factory.py -v
 ```
 
@@ -1812,6 +1883,9 @@ class ModelWrapper:
 
 Run:
 ```bash
+# Ensure venv is activated
+source venv/bin/activate  # If not already activated
+
 python -m pytest tests/test_backend_factory.py -v
 python -m pytest tests/test_model.py -v
 ```
@@ -1859,15 +1933,25 @@ Minimal speech-to-text CLI application using NVIDIA's Parakeet TDT 0.6B model, o
 git clone <repository-url>
 cd parakeet-stt
 
-# Install dependencies
+# Create and activate virtual environment
+python3 -m venv venv
+source venv/bin/activate  # macOS/Linux
+# OR on Windows: venv\Scripts\activate
+
+# Upgrade pip and install dependencies
+pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
 ### Apple Silicon Installation (MLX backend)
 
 ```bash
-# Install with MLX support for Apple Neural Engine
-pip install -r requirements.txt
+# Follow basic installation steps above, then:
+
+# Ensure venv is activated (you should see (venv) in your prompt)
+source venv/bin/activate  # macOS/Linux
+
+# Install MLX dependencies for Apple Neural Engine
 pip install -r requirements-mlx.txt
 ```
 
@@ -1938,9 +2022,18 @@ parakeet-stt transcribe audio.wav --device cpu   # CPU only
 
 ## Development
 
+**IMPORTANT:** Always activate your virtual environment before running development commands:
+
+```bash
+source venv/bin/activate  # macOS/Linux
+# OR on Windows: venv\Scripts\activate
+```
+
 ### Run Tests
 
 ```bash
+# Ensure venv is activated (you should see (venv) in your prompt)
+
 # Run all tests
 pytest
 
@@ -1954,6 +2047,8 @@ pytest --cov=src
 ### Code Quality
 
 ```bash
+# Ensure venv is activated
+
 # Format code
 black src/ tests/
 
@@ -2257,6 +2352,9 @@ Note: The implementation above is a template. Update based on actual parakeet-ml
 
 Run:
 ```bash
+# Ensure venv is activated
+source venv/bin/activate  # If not already activated
+
 # Install MLX dependencies
 pip install -r requirements-mlx.txt
 
@@ -2277,6 +2375,9 @@ Expected: MLX backend successfully transcribes audio with ANE acceleration
 
 Run:
 ```bash
+# Ensure venv is activated
+source venv/bin/activate  # If not already activated
+
 # Test NeMo backend
 time parakeet-stt transcribe 2086-149220-0033.wav --device cpu
 
