@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.10+, NeMo Toolkit 2.2, PyTorch 2.0+, **MLX (Apple Silicon - Primary)**, pytest, click (CLI)
 
-**Test Audio:** Using `2086-149220-0033.wav` in project root for integration testing.
+**Test Audio:** Using `tests/fixtures/sample_audio.wav` for integration testing.
 
 ---
 
@@ -82,7 +82,8 @@ parakeet-stt/
 ├── output/                      # Default output directory for transcriptions
 │   └── test/                    # Test output directory
 │
-├── 2086-149220-0033.wav         # Test audio file (provided)
+├── scripts/                     # Utility scripts
+│   └── verify_phase1.py         # Phase 1 verification script
 │
 ├── requirements.txt             # Core dependencies (NeMo, PyTorch, Click)
 ├── requirements-mlx.txt         # MLX dependencies for Apple Silicon

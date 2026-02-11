@@ -39,8 +39,4 @@ def sample_transcription():
 @pytest.fixture
 def real_audio_file():
     """Path to real audio file for integration tests."""
-    audio_path = Path("2086-149220-0033.wav")
-    if audio_path.exists():
-        return audio_path
-    # Fallback to test fixtures
     return Path("tests/fixtures/sample_audio.wav")
