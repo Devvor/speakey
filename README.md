@@ -111,9 +111,10 @@ Segment-level:
 
 ## 📚 Documentation
 
-- **Model Info:** [docs/knowledge/parakeet-tdt-model.md](docs/knowledge/parakeet-tdt-model.md)
-- **Implementation Plan:** [docs/plans/2026-02-11-minimal-stt-cli.md](docs/plans/2026-02-11-minimal-stt-cli.md)
-- **MLX Research:** [docs/research/mlx-integration.md](docs/research/mlx-integration.md)
+- **Development Phases:** [docs/knowledge/development-phases.md](docs/knowledge/development-phases.md) - Incremental feature delivery
+- **Model Info:** [docs/knowledge/parakeet-tdt-model.md](docs/knowledge/parakeet-tdt-model.md) - Parakeet TDT specifications
+- **Implementation Plan:** [docs/plans/2026-02-11-minimal-stt-cli.md](docs/plans/2026-02-11-minimal-stt-cli.md) - Detailed task breakdown
+- **MLX Research:** [docs/research/mlx-integration.md](docs/research/mlx-integration.md) - ANE optimization research
 
 ## 🔬 Model Information
 
