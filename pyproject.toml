@@ -8,9 +8,48 @@ version = "0.1.0"
 description = "Minimal STT CLI using Parakeet TDT 0.6B"
 requires-python = ">=3.10"
 dependencies = [
+    # Core CLI dependencies only
+    "click>=8.1.0",
+    "colorama>=0.4.6",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+# NeMo backend for NVIDIA CUDA, CPU, or MPS (Mac GPU without ANE)
+nemo = [
     "nemo-toolkit[asr]>=2.2.0",
     "torch>=2.0.0",
-    "click>=8.1.0",
+    "torchaudio>=2.0.0",
+]
+
+# MLX backend for Apple Neural Engine (M1/M2/M3)
+mlx = [
+    "mlx>=0.20.0",
+    "librosa>=0.10.0",
+    "soundfile>=0.12.0",
+    "numpy>=2.2.5,<2.4",
+]
+
+# Push-to-talk real-time recording (Phase 4)
+ptt = [
+    "pynput>=1.7.6",
+    "sounddevice>=0.4.6",
+    "numpy>=1.24.0",
+    "pyperclip>=1.8.2",
+]
+
+# Development dependencies
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.11.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+]
+
+# Install everything (choose backend separately)
+all = [
+    "parakeet-stt[dev]",
 ]
 
 [project.scripts]
