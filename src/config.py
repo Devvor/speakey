@@ -1,8 +1,38 @@
 """Configuration management for Parakeet STT."""
 
 import os
-from dataclasses import dataclass
+import platform
+from dataclasses import dataclass, field
 from pathlib import Path
+
+
+@dataclass
+class PTTConfig:
+    """Push-to-talk configuration."""
+
+    # Hotkey settings
+    hotkey: str = field(default_factory=lambda: PTTConfig._default_hotkey())
+    hold_threshold: float = 2.0  # seconds to hold before recording starts
+
+    # Audio settings
+    sample_rate: int = 16000
+    channels: int = 1  # mono
+    chunk_size: int = 1024
+
+    # UI settings
+    overlay_position: str = "top-right"  # top-right, top-left, bottom-right, bottom-left
+    overlay_opacity: float = 0.9
+    show_waveform: bool = True
+
+    # Clipboard settings
+    auto_copy: bool = True
+
+    @staticmethod
+    def _default_hotkey() -> str:
+        """Get default hotkey based on platform."""
+        if platform.system() == "Darwin":
+            return "option"  # Mac
+        return "alt"  # Windows/Linux
 
 
 @dataclass
@@ -21,6 +51,9 @@ class Config:
     output_dir: Path = Path("output")
     include_timestamps: bool = True
 
+    # Push-to-talk settings
+    ptt: PTTConfig = field(default_factory=PTTConfig)
+
     # Environment overrides
     enable_mps_fallback: bool = os.getenv("PYTORCH_ENABLE_MPS_FALLBACK", "1") == "1"
 
@@ -31,8 +64,6 @@ class Config:
     @property
     def is_mac(self) -> bool:
         """Check if running on macOS."""
-        import platform
-
         return platform.system() == "Darwin"
 
     def get_device(self) -> str:
