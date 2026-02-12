@@ -106,7 +106,7 @@ def transcribe(
     "--hotkey",
     type=str,
     default=None,
-    help="Hotkey to use (option/alt/ctrl)",
+    help="Hotkey to use (option, cmd, cmd_r, ctrl, shift, etc.)",
 )
 @click.option(
     "--threshold",
@@ -136,6 +136,120 @@ def ptt(hotkey: str, threshold: float, position: str):
     # Start PTT app
     app = PTTApp(config)
     app.start()
+
+
+@main.group()
+def daemon():
+    """Manage background daemon service."""
+    pass
+
+
+@daemon.command("start")
+def daemon_start():
+    """Start the background daemon."""
+    from .daemon.manager import DaemonManager
+
+    manager = DaemonManager()
+
+    if manager.is_running():
+        click.echo(f"{Fore.YELLOW}Daemon is already running (PID: {manager.get_pid()})")
+        sys.exit(0)
+
+    if manager.start():
+        click.echo(f"{Fore.GREEN}✓ Daemon started")
+        click.echo(f"{Fore.CYAN}Socket: {manager.socket_path}")
+        click.echo(f"{Fore.CYAN}Log: {manager.log_file}")
+        click.echo(f"\n{Fore.CYAN}Control recording with:")
+        click.echo(f"  parakeet-stt record")
+    else:
+        click.echo(f"{Fore.RED}Failed to start daemon")
+        sys.exit(1)
+
+
+@daemon.command("stop")
+def daemon_stop():
+    """Stop the background daemon."""
+    from .daemon.manager import DaemonManager
+
+    manager = DaemonManager()
+
+    if not manager.is_running():
+        click.echo(f"{Fore.YELLOW}Daemon is not running")
+        sys.exit(0)
+
+    if manager.stop():
+        click.echo(f"{Fore.GREEN}✓ Daemon stopped")
+    else:
+        click.echo(f"{Fore.RED}Failed to stop daemon")
+        sys.exit(1)
+
+
+@daemon.command("status")
+def daemon_status():
+    """Check daemon status."""
+    from .daemon.manager import DaemonManager
+
+    manager = DaemonManager()
+    status = manager.get_status()
+
+    if status["running"]:
+        click.echo(f"{Fore.GREEN}✓ Daemon is running")
+        click.echo(f"{Fore.CYAN}PID: {status['pid']}")
+        click.echo(f"{Fore.CYAN}Socket: {status['socket']}")
+        click.echo(f"{Fore.CYAN}Log: {status['log']}")
+    else:
+        click.echo(f"{Fore.YELLOW}Daemon is not running")
+
+
+@main.command()
+@click.argument("action", type=click.Choice(["start", "stop"]), required=False)
+def record(action: str):
+    """Control recording (toggle, start, or stop).
+
+    Examples:
+        parakeet-stt record         # Toggle recording on/off
+        parakeet-stt record start   # Start recording
+        parakeet-stt record stop    # Stop recording
+    """
+    from .daemon.manager import DaemonManager
+    from .daemon.ipc import IPCClient
+
+    manager = DaemonManager()
+
+    # Check if daemon is running
+    if not manager.is_running():
+        click.echo(f"{Fore.RED}Error: Daemon is not running")
+        click.echo(f"{Fore.CYAN}Start daemon with: parakeet-stt daemon start")
+        sys.exit(1)
+
+    # Send command to daemon
+    client = IPCClient(manager.socket_path)
+
+    try:
+        if action == "start":
+            response = client.send_command("record_start")
+        elif action == "stop":
+            click.echo(f"{Fore.CYAN}Stopping recording and transcribing (this may take a moment for first use)...")
+            response = client.send_command("record_stop")
+        else:
+            # Toggle mode
+            response = client.send_command("record_toggle")
+
+        if response["status"] == "ok":
+            click.echo(f"{Fore.GREEN}✓ {response['message']}")
+            if "text" in response:
+                click.echo(f"\n{Style.BRIGHT}Transcription:{Style.RESET_ALL}")
+                click.echo(response["text"])
+        else:
+            click.echo(f"{Fore.RED}Error: {response.get('message', 'Unknown error')}")
+            sys.exit(1)
+
+    except ConnectionError as e:
+        click.echo(f"{Fore.RED}Error: {e}")
+        sys.exit(1)
+    except Exception as e:
+        click.echo(f"{Fore.RED}Error: {e}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

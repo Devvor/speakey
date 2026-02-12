@@ -20,11 +20,17 @@ class PTTApp:
         self.config = config
 
         # Components
-        self.controller = PTTController(config)
+        print("Initializing overlay...")
         self.overlay = StatusOverlay(config)
+        print("✓ Overlay created")
+
+        print("Initializing controller...")
+        self.controller = PTTController(config)
+        print("✓ Controller created")
 
         # Connect controller state changes to overlay
         self.controller.on_state_change = self.overlay.update_state
+        print("✓ Components connected")
 
     def start(self) -> None:
         """Start the PTT application."""

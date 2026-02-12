@@ -40,10 +40,15 @@ class HotkeyListener:
         hotkey_map = {
             "option": keyboard.Key.alt,  # Option key on Mac is alt
             "alt": keyboard.Key.alt,
+            "alt_r": keyboard.Key.alt_r,  # Right alt/option
             "ctrl": keyboard.Key.ctrl,
+            "ctrl_r": keyboard.Key.ctrl_r,  # Right ctrl
             "shift": keyboard.Key.shift,
+            "shift_r": keyboard.Key.shift_r,  # Right shift
             "cmd": keyboard.Key.cmd,
             "command": keyboard.Key.cmd,
+            "cmd_r": keyboard.Key.cmd_r,  # Right command
+            "right_cmd": keyboard.Key.cmd_r,  # Alias for right command
         }
 
         return hotkey_map.get(hotkey.lower(), keyboard.Key.alt)

@@ -26,9 +26,13 @@ class PTTController:
         self.state = "idle"
 
         # Components
+        print("  - Creating hotkey listener...")
         self.hotkey_listener = HotkeyListener(config)
+        print("  - Creating audio recorder...")
         self.recorder = AudioRecorder(config)
+        print("  - Loading model (this may take a moment)...")
         self.model = ModelWrapper(config)
+        print("  - Model loaded!")
 
         # Timing
         self.hold_start_time: Optional[float] = None
