@@ -45,3 +45,4 @@ htmlcov/
 # Git worktrees
 .worktrees/
 worktrees/
+*.safetensors
