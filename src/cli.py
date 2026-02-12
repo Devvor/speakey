@@ -101,5 +101,42 @@ def transcribe(
     click.echo(transcription["text"])
 
 
+@main.command()
+@click.option(
+    "--hotkey",
+    type=str,
+    default=None,
+    help="Hotkey to use (option/alt/ctrl)",
+)
+@click.option(
+    "--threshold",
+    type=float,
+    default=2.0,
+    help="Hold duration threshold in seconds",
+)
+@click.option(
+    "--position",
+    type=click.Choice(["top-right", "top-left", "bottom-right", "bottom-left"]),
+    default="top-right",
+    help="Overlay position",
+)
+def ptt(hotkey: str, threshold: float, position: str):
+    """Start push-to-talk mode for real-time transcription."""
+    from .ptt.app import PTTApp
+
+    # Create configuration
+    config = Config()
+
+    # Override PTT settings if provided
+    if hotkey:
+        config.ptt.hotkey = hotkey
+    config.ptt.hold_threshold = threshold
+    config.ptt.overlay_position = position
+
+    # Start PTT app
+    app = PTTApp(config)
+    app.start()
+
+
 if __name__ == "__main__":
     main()
