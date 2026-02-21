@@ -1,0 +1,1 @@
+"""Subprocess entry point — stub (full implementation in Task 4)."""
