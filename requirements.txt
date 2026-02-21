@@ -9,6 +9,9 @@ protobuf~=5.29.6  # NeMo requires protobuf 5.x
 onnx<1.19         # ONNX 1.19+ requires protobuf 6+ (incompatible with NeMo)
 numpy<2.4         # Numba requires numpy <2.4
 
+# macOS key capture
+pyobjc-framework-Quartz>=10.0
+
 # CLI and utilities
 click>=8.1.0
 colorama>=0.4.6

@@ -201,6 +201,54 @@ def daemon_status():
         click.echo(f"{Fore.YELLOW}Daemon is not running")
 
 
+@main.group("fn-ptt")
+def fn_ptt():
+    """fn-key push-to-talk: hold fn to record, release to paste."""
+    pass
+
+
+@fn_ptt.command("start")
+def fn_ptt_start():
+    """Start fn-ptt in the background."""
+    from .fn_ptt.manager import FnPttManager
+    manager = FnPttManager()
+    if manager.is_running():
+        click.echo(f"{Fore.YELLOW}fn-ptt is already running (PID: {manager.get_status()['pid']})")
+        return
+    if manager.start():
+        click.echo(f"{Fore.GREEN}✓ fn-ptt started")
+        click.echo(f"{Fore.CYAN}Hold fn for 0.5s to record. Release to transcribe and paste.")
+    else:
+        click.echo(f"{Fore.RED}Failed to start fn-ptt")
+        sys.exit(1)
+
+
+@fn_ptt.command("stop")
+def fn_ptt_stop():
+    """Stop fn-ptt."""
+    from .fn_ptt.manager import FnPttManager
+    manager = FnPttManager()
+    if not manager.is_running():
+        click.echo(f"{Fore.YELLOW}fn-ptt is not running")
+        return
+    if manager.stop():
+        click.echo(f"{Fore.GREEN}✓ fn-ptt stopped")
+    else:
+        click.echo(f"{Fore.RED}Failed to stop fn-ptt")
+        sys.exit(1)
+
+
+@fn_ptt.command("status")
+def fn_ptt_status():
+    """Check fn-ptt status."""
+    from .fn_ptt.manager import FnPttManager
+    status = FnPttManager().get_status()
+    if status["running"]:
+        click.echo(f"{Fore.GREEN}✓ fn-ptt is running (PID: {status['pid']})")
+    else:
+        click.echo(f"{Fore.YELLOW}fn-ptt is not running")
+
+
 @main.command()
 @click.argument("action", type=click.Choice(["start", "stop"]), required=False)
 def record(action: str):
