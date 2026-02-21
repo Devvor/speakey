@@ -10,6 +10,7 @@ Minimal speech-to-text CLI application using NVIDIA's Parakeet TDT 0.6B model, o
 - 🍎 Native Apple Silicon support via MLX
 - 🎮 NVIDIA GPU support via CUDA
 - 💻 CPU fallback for compatibility
+- 🎙️ fn-key push-to-talk — hold fn to dictate, releases paste into any text field
 
 ## Installation
 
@@ -58,6 +59,57 @@ parakeet-stt transcribe audio.wav --no-timestamps
 
 # Force specific device
 parakeet-stt transcribe audio.wav --device cpu
+```
+
+### fn-key Push-to-Talk
+
+Loads the model once in the background. Hold **fn** for ≥0.5s to record, release to transcribe and paste into the active text field.
+
+#### macOS Permissions (one-time setup)
+
+Go to **System Settings → Privacy & Security** and add your terminal app to:
+- **Input Monitoring** — required for fn key detection
+- **Microphone** — required for audio recording
+
+#### Commands
+
+```bash
+# Start the daemon
+parakeet-stt fn-ptt start
+
+# Check status
+parakeet-stt fn-ptt status
+
+# Stop the daemon
+parakeet-stt fn-ptt stop
+```
+
+#### How it works
+
+1. `fn-ptt start` loads the model in the background (~10–30s on first run)
+2. Click into any text field
+3. Hold **fn** for at least 0.5 seconds and speak
+4. Release **fn** — transcription appears in the text field within ~1–2s
+5. Repeat as many times as needed without reloading the model
+
+Logs are written to `~/.parakeet-stt/fn-ptt.log` if anything goes wrong.
+
+### Background Daemon
+
+```bash
+# Start daemon
+parakeet-stt daemon start
+
+# Check status
+parakeet-stt daemon status
+
+# Stop daemon
+parakeet-stt daemon stop
+
+# Control recording
+parakeet-stt record        # toggle
+parakeet-stt record start
+parakeet-stt record stop
 ```
 
 ### Supported Audio Formats
@@ -152,15 +204,20 @@ mypy src/
 parakeet-stt/
 ├── src/                # Main application package
 │   ├── backends/       # Backend implementations
-│   │   ├── base.py    # Abstract backend interface
+│   │   ├── base.py         # Abstract backend interface
 │   │   ├── nemo_backend.py # NeMo/PyTorch backend
 │   │   ├── mlx_backend.py  # MLX/ANE backend
-│   │   └── factory.py # Automatic backend selection
-│   ├── cli.py         # CLI application
-│   ├── config.py      # Configuration management
-│   ├── model.py       # Model wrapper
-│   └── output.py      # Output formatting
-└── tests/             # Test suite
+│   │   └── factory.py      # Automatic backend selection
+│   ├── daemon/         # Background daemon service
+│   ├── fn_ptt/         # fn-key push-to-talk
+│   │   ├── app.py          # Event tap, recording, transcription, paste
+│   │   ├── manager.py      # Process lifecycle (PID-based)
+│   │   └── run.py          # Subprocess entry point
+│   ├── cli.py          # CLI application
+│   ├── config.py       # Configuration management
+│   ├── model.py        # Model wrapper
+│   └── output.py       # Output formatting
+└── tests/              # Test suite
 ```
 
 ## Model Information
@@ -172,6 +229,22 @@ parakeet-stt/
 - **License:** CC-BY-4.0
 
 ## Troubleshooting
+
+### fn-ptt: Could not create event tap
+
+Grant **Input Monitoring** permission to your terminal app:
+System Settings → Privacy & Security → Input Monitoring
+
+### fn-ptt: No audio recorded
+
+Grant **Microphone** permission to your terminal app:
+System Settings → Privacy & Security → Microphone
+
+### fn-ptt: Check the log
+
+```bash
+tail -f ~/.parakeet-stt/fn-ptt.log
+```
 
 ### macOS: MPS Backend Not Available
 
