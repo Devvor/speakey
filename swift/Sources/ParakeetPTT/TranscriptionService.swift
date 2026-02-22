@@ -18,6 +18,7 @@ actor TranscriptionService {
             throw TranscriptionError.notInitialized
         }
         let result = try await manager.transcribe(audioSamples, source: .microphone)
+        print("[PTT] ASRResult — text: '\(result.text)', confidence: \(result.confidence)")
         return result.text
     }
 }

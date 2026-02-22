@@ -17,6 +17,7 @@ let package = Package(
                 .product(name: "FluidAudio", package: "FluidAudio"),
             ],
             path: "Sources/ParakeetPTT",
+            exclude: ["Info.plist"],
             linkerSettings: [
                 .linkedFramework("AVFoundation"),
                 .linkedFramework("CoreGraphics"),

@@ -1,11 +1,11 @@
 import AVFoundation
 
 final class AudioRecorder {
-    private let engine = AVAudioEngine()
-    private let mixer = AVAudioMixerNode()
+    private var engine: AVAudioEngine?
     private var samples: [Float] = []
     private let lock = NSLock()
     private var isRecording = false
+    private var converter: AVAudioConverter?
 
     private let targetFormat = AVAudioFormat(
         commonFormat: .pcmFormatFloat32,
@@ -14,41 +14,44 @@ final class AudioRecorder {
         interleaved: false
     )!
 
-    init() {
-        engine.attach(mixer)
-    }
-
     func startRecording() throws {
         guard !isRecording else { return }
 
+        let engine = AVAudioEngine()
+        self.engine = engine
+
         let inputNode = engine.inputNode
-        let hardwareFormat = inputNode.inputFormat(forBus: 0)
+        let nativeFormat = inputNode.outputFormat(forBus: 0)
+        print("[PTT] Mic native format: \(nativeFormat)")
 
-        engine.connect(inputNode, to: mixer, format: hardwareFormat)
-        engine.connect(mixer, to: engine.mainMixerNode, format: targetFormat)
-
-        // Silence output to prevent feedback
-        engine.mainMixerNode.outputVolume = 0
+        // Create converter from native mic format to 16kHz mono Float32
+        guard let converter = AVAudioConverter(from: nativeFormat, to: targetFormat) else {
+            throw RecorderError.converterFailed
+        }
+        self.converter = converter
 
         lock.lock()
         samples = []
         lock.unlock()
 
-        mixer.installTap(onBus: 0, bufferSize: 4096, format: targetFormat) { [weak self] buffer, _ in
+        inputNode.installTap(onBus: 0, bufferSize: 4096, format: nativeFormat) { [weak self] buffer, _ in
             self?.processBuffer(buffer)
         }
 
         engine.prepare()
         try engine.start()
         isRecording = true
+        print("[PTT] Recording started")
     }
 
     func stopRecording() -> [Float] {
-        guard isRecording else { return [] }
+        guard isRecording, let engine else { return [] }
 
-        mixer.removeTap(onBus: 0)
+        engine.inputNode.removeTap(onBus: 0)
         engine.stop()
         isRecording = false
+        self.engine = nil
+        self.converter = nil
 
         lock.lock()
         let captured = samples
@@ -59,8 +62,37 @@ final class AudioRecorder {
     }
 
     private func processBuffer(_ buffer: AVAudioPCMBuffer) {
-        guard let channelData = buffer.floatChannelData else { return }
-        let frameCount = Int(buffer.frameLength)
+        guard let converter else { return }
+
+        // Calculate output frame capacity based on sample rate ratio
+        let ratio = targetFormat.sampleRate / buffer.format.sampleRate
+        let outputFrameCount = AVAudioFrameCount(Double(buffer.frameLength) * ratio)
+        guard let outputBuffer = AVAudioPCMBuffer(
+            pcmFormat: targetFormat,
+            frameCapacity: outputFrameCount
+        ) else { return }
+
+        var error: NSError?
+        var consumed = false
+        converter.convert(to: outputBuffer, error: &error) { _, outStatus in
+            if consumed {
+                outStatus.pointee = .noDataNow
+                return nil
+            }
+            consumed = true
+            outStatus.pointee = .haveData
+            return buffer
+        }
+
+        if let error {
+            print("[PTT] Conversion error: \(error)")
+            return
+        }
+
+        guard let channelData = outputBuffer.floatChannelData else { return }
+        let frameCount = Int(outputBuffer.frameLength)
+        guard frameCount > 0 else { return }
+
         let newSamples = Array(UnsafeBufferPointer(
             start: channelData[0],
             count: frameCount
@@ -69,5 +101,15 @@ final class AudioRecorder {
         lock.lock()
         samples.append(contentsOf: newSamples)
         lock.unlock()
+    }
+}
+
+enum RecorderError: LocalizedError {
+    case converterFailed
+
+    var errorDescription: String? {
+        switch self {
+        case .converterFailed: return "Failed to create audio format converter"
+        }
     }
 }
