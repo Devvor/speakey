@@ -13,6 +13,14 @@ actor TranscriptionService {
         self.manager = manager
     }
 
+    func loadFromCache() async throws {
+        let models = try await AsrModels.loadFromCache(version: .v3)
+        let manager = AsrManager(config: .default)
+        try await manager.initialize(models: models)
+        self.models = models
+        self.manager = manager
+    }
+
     func transcribe(_ audioSamples: [Float]) async throws -> String {
         guard let manager else {
             throw TranscriptionError.notInitialized

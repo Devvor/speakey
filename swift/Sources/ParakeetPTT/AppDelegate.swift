@@ -1,6 +1,8 @@
 import AppKit
 import AVFoundation
+import FluidAudio
 import SwiftUI
+import UserNotifications
 
 @MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
@@ -12,6 +14,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         requestMicPermission()
+        requestNotificationPermission()
         setupOverlay()
         setupFnKeyMonitor()
         loadModel()
@@ -31,6 +34,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             appState.status = .error("Grant Microphone permission in System Settings")
         @unknown default:
             break
+        }
+    }
+
+    private func requestNotificationPermission() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { granted, error in
+            if let error {
+                print("[PTT] Notification permission error: \(error.localizedDescription)")
+            } else {
+                print("[PTT] Notification permission \(granted ? "granted" : "denied")")
+            }
         }
     }
 
@@ -56,10 +69,46 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func loadModel() {
         Task {
             do {
-                try await transcriptionService.loadModel()
+                let cacheDir = AsrModels.defaultCacheDirectory(for: .v3)
+                let needsDownload = !AsrModels.modelsExist(at: cacheDir, version: .v3)
+
+                if needsDownload {
+                    appState.status = .downloading
+                    print("[PTT] Models not cached, downloading...")
+                    try await AsrModels.download(version: .v3)
+                    print("[PTT] Download complete")
+                }
+
+                appState.status = .loadingModel
+                print("[PTT] Loading model into memory...")
+                try await transcriptionService.loadFromCache()
+                print("[PTT] Model loaded successfully")
+
                 appState.status = .ready
+
+                if needsDownload {
+                    sendReadyNotification()
+                }
             } catch {
                 appState.status = .error("Model load failed: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    private func sendReadyNotification() {
+        let content = UNMutableNotificationContent()
+        content.title = "Parakeet PTT"
+        content.body = "Model ready — hold fn to start dictating"
+        content.sound = .default
+
+        let request = UNNotificationRequest(
+            identifier: "model-ready",
+            content: content,
+            trigger: nil
+        )
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error {
+                print("[PTT] Failed to send notification: \(error.localizedDescription)")
             }
         }
     }
