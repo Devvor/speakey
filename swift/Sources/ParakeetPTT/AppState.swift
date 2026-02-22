@@ -4,20 +4,22 @@ import SwiftUI
 @MainActor
 final class AppState {
     enum Status: Equatable {
-        case loading       // Model downloading/loading
-        case ready         // Idle, waiting for fn key
-        case recording     // fn held, mic active
-        case transcribing  // fn released, processing audio
-        case error(String) // Something went wrong
+        case downloading    // First launch: downloading models from HuggingFace
+        case loadingModel   // Loading cached models into memory
+        case ready          // Idle, waiting for fn key
+        case recording      // fn held, mic active
+        case transcribing   // fn released, processing audio
+        case error(String)  // Something went wrong
     }
 
-    var status: Status = .loading
+    var status: Status = .loadingModel
     var lastTranscription: String = ""
 
     var isRecording: Bool { status == .recording }
     var statusText: String {
         switch status {
-        case .loading:            return "Loading model..."
+        case .downloading:        return "Downloading model (~2.5GB)..."
+        case .loadingModel:       return "Loading model..."
         case .ready:              return "Ready"
         case .recording:          return "Recording..."
         case .transcribing:       return "Transcribing..."
@@ -27,11 +29,14 @@ final class AppState {
 
     var statusIcon: String {
         switch status {
-        case .loading:       return "arrow.down.circle"
+        case .downloading:   return "arrow.down.circle"
+        case .loadingModel:  return "gear"
         case .ready:         return "waveform"
         case .recording:     return "mic.fill"
         case .transcribing:  return "ellipsis.circle"
         case .error:         return "exclamationmark.triangle"
         }
     }
+
+    var isDownloading: Bool { status == .downloading }
 }
