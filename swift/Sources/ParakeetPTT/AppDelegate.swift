@@ -38,6 +38,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func requestNotificationPermission() {
+        guard Bundle.main.bundleIdentifier != nil else {
+            print("[PTT] Skipping notification permission — no app bundle")
+            return
+        }
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { granted, error in
             if let error {
                 print("[PTT] Notification permission error: \(error.localizedDescription)")
@@ -96,6 +100,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func sendReadyNotification() {
+        guard Bundle.main.bundleIdentifier != nil else { return }
         let content = UNMutableNotificationContent()
         content.title = "Parakeet PTT"
         content.body = "Model ready — hold fn to start dictating"
