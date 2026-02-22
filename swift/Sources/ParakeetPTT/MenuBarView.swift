@@ -12,6 +12,12 @@ struct MenuBarView: View {
                     .font(.headline)
             }
 
+            if appState.isDownloading {
+                Text("First launch only.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
             Divider()
 
             Text("Hold fn for 0.5s to record")
