@@ -50,3 +50,4 @@ worktrees/
 # Swift build
 swift/.build/
 swift/Package.resolved
+*.dmg
