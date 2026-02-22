@@ -10,8 +10,9 @@ struct OverlayView: View {
                 .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(.primary)
         }
-        .padding(.horizontal, 20)
+        .padding(.horizontal, 28)
         .padding(.vertical, 12)
+        .fixedSize()
         .background(.ultraThinMaterial, in: Capsule())
     }
 

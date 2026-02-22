@@ -31,6 +31,15 @@ class OverlayPanel: NSPanel {
     override var canBecomeKey: Bool { false }
     override var canBecomeMain: Bool { false }
 
+    func showView(_ view: some View) {
+        let hostingView = NSHostingView(rootView: view)
+        let fittingSize = hostingView.fittingSize
+        contentView = hostingView
+        setContentSize(fittingSize)
+        positionAtTopCenter()
+        orderFrontRegardless()
+    }
+
     func positionAtTopCenter() {
         guard let screen = NSScreen.main else { return }
         let visibleFrame = screen.visibleFrame

@@ -127,15 +127,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - Overlay
 
     private func showOverlay() {
-        let view = OverlayView(status: appState.status)
-        overlayPanel?.contentView = NSHostingView(rootView: view)
-        overlayPanel?.positionAtTopCenter()
-        overlayPanel?.orderFrontRegardless()
+        overlayPanel?.showView(OverlayView(status: appState.status))
     }
 
     private func updateOverlay() {
-        let view = OverlayView(status: appState.status)
-        overlayPanel?.contentView = NSHostingView(rootView: view)
+        overlayPanel?.showView(OverlayView(status: appState.status))
     }
 
     private func hideOverlay() {
