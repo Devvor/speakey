@@ -46,3 +46,7 @@ htmlcov/
 .worktrees/
 worktrees/
 *.safetensors
+
+# Swift build
+swift/.build/
+swift/Package.resolved
