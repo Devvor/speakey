@@ -2,11 +2,14 @@ import SwiftUI
 
 @main
 struct ParakeetApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+
     var body: some Scene {
-        MenuBarExtra("Parakeet PTT", systemImage: "waveform") {
-            Text("Loading...")
-            Divider()
-            Button("Quit") { NSApplication.shared.terminate(nil) }
+        MenuBarExtra {
+            MenuBarView(appState: appDelegate.appState)
+        } label: {
+            Label("Parakeet PTT", systemImage: appDelegate.appState.statusIcon)
         }
+        .menuBarExtraStyle(.window)
     }
 }
