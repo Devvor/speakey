@@ -51,7 +51,7 @@ def test_model_wrapper_transcribe_with_timestamps(config, temp_audio_file):
             "timestamps": {
                 "word": [{"start": 0.0, "end": 0.5, "word": "test"}],
                 "segment": [{"start": 0.0, "end": 1.0, "segment": "test transcription"}],
-            }
+            },
         }
         mock_create.return_value = mock_backend
 

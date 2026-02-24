@@ -61,6 +61,7 @@ def test_ipc_client_server_communication(short_socket_path):
 
     # Wait for server to be ready
     import time
+
     time.sleep(0.1)
 
     # Send message

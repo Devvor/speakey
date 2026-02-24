@@ -54,11 +54,7 @@ class IPCServer:
             try:
                 self.server.settimeout(1.0)
                 conn, _ = self.server.accept()
-                threading.Thread(
-                    target=self._handle_connection,
-                    args=(conn,),
-                    daemon=True
-                ).start()
+                threading.Thread(target=self._handle_connection, args=(conn,), daemon=True).start()
             except socket.timeout:
                 continue
             except Exception as e:
@@ -79,11 +75,23 @@ class IPCServer:
                 message = json.loads(data.decode())
 
                 if not isinstance(message, dict) or "command" not in message:
-                    response = {"status": "error", "message": "Invalid message: must be a dict with 'command' key"}
+                    response = {
+                        "status": "error",
+                        "message": "Invalid message: must be a dict with 'command' key",
+                    }
                 else:
-                    VALID_COMMANDS = {"record_start", "record_stop", "record_toggle", "status", "ping"}
+                    VALID_COMMANDS = {
+                        "record_start",
+                        "record_stop",
+                        "record_toggle",
+                        "status",
+                        "ping",
+                    }
                     if message["command"] not in VALID_COMMANDS:
-                        response = {"status": "error", "message": f"Unknown command: {message['command']}"}
+                        response = {
+                            "status": "error",
+                            "message": f"Unknown command: {message['command']}",
+                        }
                     elif self.on_message:
                         try:
                             response = self.on_message(message)

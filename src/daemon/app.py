@@ -60,6 +60,7 @@ class DaemonApp:
         # Run headless (no overlay for now - causes issues as background daemon)
         print("Daemon running. Press Ctrl+C to quit.")
         import time
+
         try:
             while True:
                 time.sleep(1)
@@ -111,6 +112,7 @@ class DaemonApp:
         except Exception as e:
             print(f"Error handling command: {e}")
             import traceback
+
             traceback.print_exc()
             return {"status": "error", "message": str(e)}
 

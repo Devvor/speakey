@@ -18,9 +18,7 @@ class BaseBackend(ABC):
         pass
 
     @abstractmethod
-    def transcribe(
-        self, audio_path: Union[str, Path], timestamps: bool = True
-    ) -> Dict:
+    def transcribe(self, audio_path: Union[str, Path], timestamps: bool = True) -> Dict:
         """Transcribe audio file.
 
         Args:

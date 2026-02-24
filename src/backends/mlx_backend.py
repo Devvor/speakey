@@ -64,9 +64,7 @@ class MLXBackend(BaseBackend):
                 f"Then: pip install git+https://github.com/EliFuzz/parakeet-mlx.git"
             )
 
-    def transcribe(
-        self, audio_path: Union[str, Path], timestamps: bool = True
-    ) -> Dict:
+    def transcribe(self, audio_path: Union[str, Path], timestamps: bool = True) -> Dict:
         """Transcribe audio using MLX (with ANE if quantized).
 
         Args:

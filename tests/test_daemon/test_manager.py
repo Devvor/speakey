@@ -39,6 +39,7 @@ def test_daemon_manager_is_running_stale_pid(tmp_path):
 def test_daemon_manager_get_status(tmp_path):
     """Test getting daemon status."""
     import os
+
     manager = DaemonManager(runtime_dir=tmp_path)
 
     # Not running

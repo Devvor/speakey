@@ -71,6 +71,7 @@ class DaemonManager:
 
         # Find the daemon runner script
         import src.daemon.run_daemon
+
         daemon_script = Path(src.daemon.run_daemon.__file__)
 
         # Start daemon as subprocess
@@ -117,6 +118,7 @@ class DaemonManager:
 
             # Wait for process to exit
             import time
+
             for _ in range(10):
                 try:
                     os.kill(pid, 0)
