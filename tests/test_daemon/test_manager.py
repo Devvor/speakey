@@ -1,6 +1,5 @@
 """Tests for daemon manager."""
 
-
 from src.daemon.manager import DaemonManager
 
 
