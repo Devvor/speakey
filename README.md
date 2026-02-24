@@ -1,7 +1,5 @@
 # Parakeet STT
 
-[![CI](https://github.com/samuelymh/parakeet-stt/actions/workflows/ci.yml/badge.svg)](https://github.com/samuelymh/parakeet-stt/actions/workflows/ci.yml)
-
 Minimal speech-to-text CLI application using NVIDIA's Parakeet TDT 0.6B model, optimized for Apple Neural Engine on Mac.
 
 ## Features
