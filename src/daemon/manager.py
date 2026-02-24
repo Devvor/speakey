@@ -21,7 +21,7 @@ class DaemonManager:
             runtime_dir = Path.home() / ".parakeet-stt"
 
         self.runtime_dir = runtime_dir
-        self.runtime_dir.mkdir(parents=True, exist_ok=True)
+        self.runtime_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
 
         self.pid_file = self.runtime_dir / "daemon.pid"
         self.socket_path = self.runtime_dir / "daemon.sock"
@@ -71,6 +71,7 @@ class DaemonManager:
 
         # Find the daemon runner script
         import src.daemon.run_daemon
+
         daemon_script = Path(src.daemon.run_daemon.__file__)
 
         # Start daemon as subprocess
@@ -117,6 +118,7 @@ class DaemonManager:
 
             # Wait for process to exit
             import time
+
             for _ in range(10):
                 try:
                     os.kill(pid, 0)

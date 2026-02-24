@@ -29,13 +29,9 @@ class NeMoBackend(BaseBackend):
 
     def load_model(self):
         """Load NeMo ASR model."""
-        return nemo_asr.models.ASRModel.from_pretrained(
-            model_name=self.config.model_name
-        )
+        return nemo_asr.models.ASRModel.from_pretrained(model_name=self.config.model_name)
 
-    def transcribe(
-        self, audio_path: Union[str, Path], timestamps: bool = True
-    ) -> Dict:
+    def transcribe(self, audio_path: Union[str, Path], timestamps: bool = True) -> Dict:
         """Transcribe audio using NeMo."""
         audio_path = str(audio_path)
         output = self.model.transcribe([audio_path], timestamps=timestamps)

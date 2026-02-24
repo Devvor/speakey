@@ -1,7 +1,6 @@
 """Tests for backend factory."""
 
-import pytest
-from unittest.mock import patch, Mock
+from unittest.mock import patch
 
 
 def test_backend_factory_selects_mlx_on_mac():

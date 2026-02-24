@@ -11,7 +11,7 @@ from pathlib import Path
 class FnPttManager:
     def __init__(self, runtime_dir: Path | None = None):
         self.runtime_dir = Path(runtime_dir or (Path.home() / ".parakeet-stt"))
-        self.runtime_dir.mkdir(parents=True, exist_ok=True)
+        self.runtime_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
         self.pid_file = self.runtime_dir / "fn-ptt.pid"
 
     def is_running(self) -> bool:
@@ -29,11 +29,14 @@ class FnPttManager:
         if self.is_running():
             return False
         import src.fn_ptt.run as _run_module
+
         run_script = Path(_run_module.__file__)
         log = open(self.runtime_dir / "fn-ptt.log", "a")
         proc = subprocess.Popen(
             [sys.executable, str(run_script), str(self.runtime_dir)],
-            stdout=log, stderr=log, stdin=subprocess.DEVNULL,
+            stdout=log,
+            stderr=log,
+            stdin=subprocess.DEVNULL,
             start_new_session=True,
         )
         self.pid_file.write_text(str(proc.pid))

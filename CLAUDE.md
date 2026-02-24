@@ -8,16 +8,24 @@
 
 ```bash
 # Activate virtual environment
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate
 
-# Run tests
+# Install pre-commit hooks (one-time)
+pip install pre-commit && pre-commit install
+
+# Run tests (install test deps first if needed)
+pip install pytest pytest-cov pytest-mock
 pytest
 
-# Run specific test file
-pytest tests/test_config.py -v
-
-# Transcribe audio (once CLI is implemented)
+# Transcribe audio
 parakeet-stt transcribe audio.wav
+
+# fn-key push-to-talk (Python daemon)
+parakeet-stt fn-ptt start
+
+# Build the native Swift menu-bar app
+./scripts/build-swift.sh          # debug
+./scripts/build-swift.sh release  # release
 ```
 
 ---
@@ -26,54 +34,62 @@ parakeet-stt transcribe audio.wav
 
 ```
 parakeet-stt/
-├── src/                         # Main application package
-│   ├── __init__.py              # Package initialization
+├── src/                         # Python application package
+│   ├── __init__.py
 │   ├── config.py                # Configuration management
 │   ├── model.py                 # Model wrapper with backend selection
-│   ├── output.py                # Output formatting (to be implemented)
-│   ├── cli.py                   # CLI interface (to be implemented)
-│   └── backends/                # Backend implementations (Phase 3)
-│       ├── __init__.py
-│       ├── base.py              # Abstract base backend
-│       ├── nemo_backend.py      # NeMo/PyTorch backend
-│       ├── mlx_backend.py       # MLX/ANE backend (Apple Silicon)
-│       └── factory.py           # Automatic backend selection
+│   ├── output.py                # Output formatting
+│   ├── cli.py                   # Click-based CLI
+│   ├── backends/                # Backend implementations
+│   │   ├── base.py              # Abstract base backend
+│   │   ├── nemo_backend.py      # NeMo/PyTorch backend
+│   │   ├── mlx_backend.py       # MLX/ANE backend (Apple Silicon)
+│   │   └── factory.py           # Automatic backend selection
+│   ├── daemon/                  # Background recording daemon
+│   │   ├── app.py               # Daemon application
+│   │   ├── controller.py        # Recording controller
+│   │   ├── ipc.py               # Unix socket IPC server/client (0o600)
+│   │   ├── manager.py           # Process lifecycle (PID-based)
+│   │   └── run_daemon.py        # Subprocess entry point
+│   └── fn_ptt/                  # Python fn-key push-to-talk
+│       ├── app.py               # Event tap, recording, transcription, paste
+│       ├── manager.py           # Process lifecycle (PID-based)
+│       └── run.py               # Subprocess entry point
 │
-├── tests/                       # Test suite
-│   ├── __init__.py
-│   ├── conftest.py              # Pytest fixtures and config
-│   ├── test_config.py           # Configuration tests
-│   ├── test_model.py            # Model wrapper tests
-│   ├── test_output.py           # Output handler tests (to be created)
-│   ├── test_cli.py              # CLI tests (to be created)
-│   ├── test_backends.py         # Backend tests (Phase 3)
-│   ├── test_backend_factory.py  # Factory tests (Phase 3)
-│   ├── test_mlx_backend.py      # MLX tests (Phase 3)
-│   ├── test_integration.py      # End-to-end tests (to be created)
+├── swift/                       # Native macOS menu-bar app (ParakeetPTT)
+│   └── Sources/ParakeetPTT/
+│       ├── AppDelegate.swift        # App lifecycle + fn-key handling
+│       ├── AudioRecorder.swift      # AVFoundation audio capture
+│       ├── FnKeyMonitor.swift       # Global fn-key event tap
+│       ├── MenuBarView.swift        # Menu bar UI
+│       ├── TranscriptionService.swift  # CoreML inference
+│       └── PasteService.swift       # Accessibility paste
+│
+├── scripts/
+│   ├── build-swift.sh           # Build Swift app (debug/release)
+│   └── package-dmg.sh           # Package as distributable DMG
+│
+├── tests/                       # Python test suite
+│   ├── conftest.py              # Shared fixtures
+│   ├── test_config.py
+│   ├── test_model.py
+│   ├── test_backends.py
+│   ├── test_backend_factory.py
+│   ├── test_mlx_backend.py
 │   └── fixtures/
-│       └── sample_audio.wav     # Test audio (2086-149220-0033.wav)
+│       └── sample_audio.wav     # Test audio
 │
 ├── docs/                        # Documentation
-│   ├── knowledge/
-│   │   ├── parakeet-tdt-model.md      # Model specifications
-│   │   └── development-phases.md      # Incremental delivery plan
-│   ├── plans/
-│   │   └── 2026-02-11-minimal-stt-cli.md  # Implementation plan
-│   └── research/
-│       ├── mlx-integration.md         # MLX research
-│       └── mlx-api-investigation.md   # MLX API details (Phase 3)
+│   ├── knowledge/               # Model specs, development phases
+│   ├── plans/                   # Implementation plans
+│   └── research/                # MLX research notes
 │
-├── output/                      # Transcription outputs
-│   └── test/                    # Test outputs
-│
-├── venv/                        # Virtual environment (not in git)
-├── 2086-149220-0033.wav         # Test audio file
-│
-├── requirements.txt             # Core dependencies
-├── requirements-mlx.txt         # MLX dependencies (Phase 3)
-├── pyproject.toml               # Project configuration
+├── .github/workflows/ci.yml     # GitHub Actions CI pipeline
+├── .pre-commit-config.yaml      # Pre-commit hooks (Black + Ruff)
+├── requirements.txt             # Runtime Python dependencies
+├── requirements-mlx.txt         # MLX dependencies (Apple Silicon)
+├── pyproject.toml               # Project metadata and tool config
 ├── .python-version              # Python 3.10+
-├── .gitignore
 ├── README.md
 └── CLAUDE.md                    # This file
 ```
@@ -121,29 +137,38 @@ ModelWrapper:
   - transcribe(audio_path, timestamps) -> Dict
 ```
 
-#### Phase 2: CLI Interface ⏳ **NEXT**
-**Status:** Ready to start
-**Deliverable:** End-user command-line tool
+#### Phase 2: CLI Interface ✅ **COMPLETE**
+**Status:** ✅ Complete
+**Deliverable:** End-user command-line tool + background daemon + fn-ptt
 
-**To implement:**
-- Task 4: `src/output.py` - Format and save transcriptions
-- Task 5: `src/cli.py` - Click-based CLI interface
-- Task 6: Integration tests with real audio
+**Completed:**
+- ✅ `src/output.py` - Output formatting
+- ✅ `src/cli.py` - Click-based CLI
+- ✅ `src/daemon/` - Background recording daemon with Unix socket IPC
+- ✅ `src/fn_ptt/` - Python fn-key push-to-talk with transcription + paste
+- ✅ Security hardening: runtime dir `0o700`, IPC socket `0o600`, no transcription text in logs
 
-**Expected outcome:**
 ```bash
 parakeet-stt transcribe audio.wav
-cat output/audio.txt  # Formatted transcription
+parakeet-stt fn-ptt start
+parakeet-stt daemon start
 ```
 
-#### Phase 3: ANE Optimization ⏳ (Not Started)
-**Deliverable:** Production-ready optimized app
+#### Phase 3: ANE Optimization 🚀 **IN PROGRESS**
+**Deliverable:** Native macOS app using CoreML for on-device inference
 
-**To be implemented:**
-- Backend abstraction layer (`src/backends/`)
-- MLX backend for Apple Silicon
-- Automatic platform detection
-- Performance benchmarking
+**Completed:**
+- ✅ Backend abstraction layer (`src/backends/`)
+- ✅ MLX backend for Apple Silicon
+- ✅ Swift macOS menu-bar app (ParakeetPTT) using CoreML + parakeet-mlx
+- ✅ DMG packaging with ad-hoc and Developer ID code signing
+- ✅ GitHub Actions CI pipeline
+- ✅ Pre-commit hooks
+
+**In progress / next:**
+- [ ] Notarization for Gatekeeper-safe distribution
+- [ ] Performance benchmarking vs Python daemon
+- [ ] Auto-updater
 
 ---
 
@@ -246,26 +271,47 @@ deactivate
 which python  # Should point to venv/bin/python
 ```
 
+### Pre-commit Hooks
+
+Pre-commit runs Black and Ruff automatically before each commit:
+
+```bash
+# One-time setup
+pip install pre-commit
+pre-commit install
+
+# Run manually on all files
+pre-commit run --all-files
+```
+
 ### Common Commands
 
 ```bash
 # Format code
-black src/ tests/
+black --line-length 100 src/ tests/
 
 # Lint code
-ruff check src/ tests/
+ruff check --line-length 100 src/ tests/
 
 # Install new dependency
 pip install <package>
-pip freeze > requirements.txt  # Update requirements
+# Update requirements.txt manually (do NOT use pip freeze - it captures the full env)
 
 # Run specific test with debugging
 pytest tests/test_model.py::test_model_wrapper_initialization -v -s
+
+# Build Swift app
+./scripts/build-swift.sh          # debug (default)
+./scripts/build-swift.sh release  # optimised binary
+
+# Package DMG
+./scripts/package-dmg.sh
+CODESIGN_IDENTITY="Developer ID Application: ..." ./scripts/package-dmg.sh
 ```
 
 ### Git Workflow
 
-Currently using simple main branch workflow. Future phases will use feature branches:
+Simple main branch workflow:
 
 ```bash
 # Check status
@@ -286,6 +332,19 @@ git push origin main
 - `docs:` - Documentation changes
 - `refactor:` - Code refactoring
 - `chore:` - Maintenance tasks
+
+### CI Pipeline
+
+GitHub Actions runs on every push and PR to `main`:
+
+| Job | What it does |
+|-----|-------------|
+| `python-lint` | Black + Ruff check (ubuntu-latest) |
+| `python-test` | `pytest -m "not slow"` (macos-latest) |
+| `swift-build` | `swift build` debug (macos-14) |
+| `dependency-audit` | `pip-audit` on requirements.txt |
+
+The pipeline is defined in `.github/workflows/ci.yml`.
 
 ---
 
@@ -360,15 +419,19 @@ print(output[0].text)
 nemo-toolkit[asr]>=2.2.0  # ASR model framework
 torch>=2.0.0               # Deep learning
 torchaudio>=2.0.0          # Audio processing
+pyobjc-framework-Quartz>=10.0  # macOS event tap (fn-ptt)
 click>=8.1.0               # CLI framework
 colorama>=0.4.6            # Terminal colors
-pytest>=7.4.0              # Testing
-pytest-cov>=4.1.0          # Coverage
-black>=23.0.0              # Formatting
-ruff>=0.1.0                # Linting
 ```
 
-### MLX (requirements-mlx.txt) - Phase 3
+Testing and development tools are **not** in `requirements.txt` — install them separately:
+
+```bash
+pip install pytest pytest-cov pytest-mock  # tests
+pip install black ruff pre-commit          # dev tools
+```
+
+### MLX (requirements-mlx.txt)
 ```txt
 mlx>=0.20.0                # Apple Silicon ML framework
 parakeet-mlx>=0.1.0        # MLX Parakeet implementation
@@ -484,8 +547,19 @@ time parakeet-stt transcribe 2086-149220-0033.wav  # Auto-detect
 
 ### Core Implementation
 - `src/model.py` - Main model wrapper
-- `src/output.py` - Output formatting (to be created)
-- `src/cli.py` - CLI interface (to be created)
+- `src/output.py` - Output formatting
+- `src/cli.py` - CLI interface
+- `src/daemon/` - Background recording daemon
+- `src/fn_ptt/` - Python fn-key push-to-talk
+- `swift/` - Native macOS menu-bar app (ParakeetPTT)
+
+### Build & Packaging
+- `scripts/build-swift.sh` - Build Swift app (`debug` or `release` arg)
+- `scripts/package-dmg.sh` - Create distributable DMG with code signing
+
+### CI & Quality
+- `.github/workflows/ci.yml` - GitHub Actions (lint, test, Swift build, dep audit)
+- `.pre-commit-config.yaml` - Pre-commit hooks (Black, Ruff, trailing whitespace, etc.)
 
 ### Testing
 - `tests/conftest.py` - Shared fixtures
@@ -493,9 +567,9 @@ time parakeet-stt transcribe 2086-149220-0033.wav  # Auto-detect
 - `tests/fixtures/sample_audio.wav` - Test audio
 
 ### Documentation
-- `README.md` - Project overview
+- `README.md` - Project overview and usage
 - `docs/knowledge/development-phases.md` - Phase details
-- `docs/plans/2026-02-11-minimal-stt-cli.md` - Implementation plan
+- `docs/plans/` - Implementation plans per feature
 - `CLAUDE.md` - This file
 
 ---
@@ -503,24 +577,27 @@ time parakeet-stt transcribe 2086-149220-0033.wav  # Auto-detect
 ## Next Steps
 
 ### ✅ Phase 1: COMPLETE
-- [x] Task 1: Project structure and dependencies
-- [x] Task 2: Core module structure
-- [x] Task 3: Model wrapper with MPS backend
+- [x] Project structure and dependencies
+- [x] Core module structure (`config.py`, `model.py`)
 - [x] All tests passing (86% coverage)
 
-### 🚀 Phase 2: CLI Interface (CURRENT)
-1. [ ] **Task 4:** Implement `src/output.py` - Output handler
-2. [ ] **Task 5:** Implement `src/cli.py` - CLI application
-3. [ ] **Task 6:** Create integration tests with real audio
-4. [ ] Install as package: `pip install -e .`
-5. [ ] Test CLI: `parakeet-stt transcribe 2086-149220-0033.wav`
-6. [ ] Verify output file generation
+### ✅ Phase 2: CLI + Daemon + fn-ptt — COMPLETE
+- [x] `src/output.py` — output formatting
+- [x] `src/cli.py` — Click CLI
+- [x] `src/daemon/` — background daemon with Unix socket IPC
+- [x] `src/fn_ptt/` — Python fn-key push-to-talk
+- [x] Security hardening (dir/socket permissions, no text in logs)
 
-### Phase 3 (MLX Optimization)
-8. [ ] Research parakeet-mlx API
-9. [ ] Implement backend abstraction
-10. [ ] Implement MLX backend
-11. [ ] Benchmark performance
+### 🚀 Phase 3: Native macOS App — IN PROGRESS
+- [x] Backend abstraction layer (`src/backends/`)
+- [x] MLX backend for Apple Silicon
+- [x] Swift menu-bar app (ParakeetPTT) — CoreML inference
+- [x] DMG packaging with code signing
+- [x] CI pipeline (GitHub Actions)
+- [x] Pre-commit hooks
+- [ ] Notarization for Gatekeeper-safe distribution
+- [ ] Performance benchmarking (Swift CoreML vs Python NeMo)
+- [ ] Auto-updater / Sparkle integration
 
 ---
 
@@ -535,8 +612,9 @@ time parakeet-stt transcribe 2086-149220-0033.wav  # Auto-detect
 
 ---
 
-**Last Updated:** 2026-02-11
+**Last Updated:** 2026-02-24
 **Python Version:** 3.10+ (venv: 3.14)
-**Current Phase:** Phase 2 (CLI Interface)
-**Phase 1 Status:** ✅ Complete (7/7 tests passing, 86% coverage)
-**Next Task:** Implement `src/output.py` (Task 4)
+**Current Phase:** Phase 3 (Native macOS App)
+**Phase 1 Status:** ✅ Complete
+**Phase 2 Status:** ✅ Complete (CLI + daemon + fn-ptt)
+**Next Task:** Notarization + performance benchmarking

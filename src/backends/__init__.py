@@ -6,7 +6,7 @@ __all__ = ["BaseBackend"]
 
 # Conditionally import NeMo backend
 try:
-    from .nemo_backend import NeMoBackend
+    from .nemo_backend import NeMoBackend  # noqa: F401
 
     __all__.append("NeMoBackend")
     NEMO_AVAILABLE = True
@@ -16,7 +16,7 @@ except Exception:
 
 # Conditionally import MLX backend
 try:
-    from .mlx_backend import MLXBackend
+    from .mlx_backend import MLXBackend  # noqa: F401
 
     __all__.append("MLXBackend")
     MLX_AVAILABLE = True

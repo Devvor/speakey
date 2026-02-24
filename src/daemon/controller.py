@@ -169,6 +169,7 @@ class DaemonRecordingController:
 
         # Return to idle after brief delay
         import threading
+
         threading.Timer(2.0, lambda: self._update_state("idle")).start()
 
     def _copy_to_clipboard(self, text: str) -> None:
@@ -179,6 +180,7 @@ class DaemonRecordingController:
         """
         try:
             import pyperclip
+
             pyperclip.copy(text)
         except ImportError:
             print("Warning: pyperclip not installed, clipboard not available")

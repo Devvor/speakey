@@ -1,6 +1,5 @@
 """Tests for output handler."""
 
-import pytest
 from pathlib import Path
 
 

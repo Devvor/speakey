@@ -101,7 +101,6 @@ def transcribe(
     click.echo(transcription["text"])
 
 
-
 @main.group()
 def daemon():
     """Manage background daemon service."""
@@ -124,7 +123,7 @@ def daemon_start():
         click.echo(f"{Fore.CYAN}Socket: {manager.socket_path}")
         click.echo(f"{Fore.CYAN}Log: {manager.log_file}")
         click.echo(f"\n{Fore.CYAN}Control recording with:")
-        click.echo(f"  parakeet-stt record")
+        click.echo("  parakeet-stt record")
     else:
         click.echo(f"{Fore.RED}Failed to start daemon")
         sys.exit(1)
@@ -175,6 +174,7 @@ def fn_ptt():
 def fn_ptt_start():
     """Start fn-ptt in the background."""
     from .fn_ptt.manager import FnPttManager
+
     manager = FnPttManager()
     if manager.is_running():
         click.echo(f"{Fore.YELLOW}fn-ptt is already running (PID: {manager.get_status()['pid']})")
@@ -191,6 +191,7 @@ def fn_ptt_start():
 def fn_ptt_stop():
     """Stop fn-ptt."""
     from .fn_ptt.manager import FnPttManager
+
     manager = FnPttManager()
     if not manager.is_running():
         click.echo(f"{Fore.YELLOW}fn-ptt is not running")
@@ -206,6 +207,7 @@ def fn_ptt_stop():
 def fn_ptt_status():
     """Check fn-ptt status."""
     from .fn_ptt.manager import FnPttManager
+
     status = FnPttManager().get_status()
     if status["running"]:
         click.echo(f"{Fore.GREEN}✓ fn-ptt is running (PID: {status['pid']})")
@@ -241,7 +243,9 @@ def record(action: str):
         if action == "start":
             response = client.send_command("record_start")
         elif action == "stop":
-            click.echo(f"{Fore.CYAN}Stopping recording and transcribing (this may take a moment for first use)...")
+            click.echo(
+                f"{Fore.CYAN}Stopping recording and transcribing (this may take a moment for first use)..."
+            )
             response = client.send_command("record_stop")
         else:
             # Toggle mode

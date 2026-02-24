@@ -35,17 +35,13 @@ class OutputHandler:
             if "word" in transcription["timestamps"]:
                 lines.append("\nWord-level:")
                 for item in transcription["timestamps"]["word"]:
-                    lines.append(
-                        f"  {item['start']:.2f}s - {item['end']:.2f}s: {item['word']}"
-                    )
+                    lines.append(f"  {item['start']:.2f}s - {item['end']:.2f}s: {item['word']}")
 
             # Add segment-level timestamps
             if "segment" in transcription["timestamps"]:
                 lines.append("\nSegment-level:")
                 for item in transcription["timestamps"]["segment"]:
-                    lines.append(
-                        f"  {item['start']:.2f}s - {item['end']:.2f}s: {item['segment']}"
-                    )
+                    lines.append(f"  {item['start']:.2f}s - {item['end']:.2f}s: {item['segment']}")
 
         return "\n".join(lines)
 

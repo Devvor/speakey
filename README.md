@@ -168,10 +168,26 @@ source venv/bin/activate  # macOS/Linux
 # OR on Windows: venv\Scripts\activate
 ```
 
+### Pre-commit Hooks
+
+Install pre-commit hooks to automatically format and lint code before each commit:
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+Hooks run automatically on `git commit`. To run them manually on all files:
+
+```bash
+pre-commit run --all-files
+```
+
 ### Run Tests
 
 ```bash
 # Ensure venv is activated (you should see (venv) in your prompt)
+pip install pytest pytest-cov pytest-mock
 
 # Run all tests
 pytest
@@ -189,35 +205,86 @@ pytest --cov=src
 # Ensure venv is activated
 
 # Format code
-black src/ tests/
+black --line-length 100 src/ tests/
 
 # Lint code
-ruff check src/ tests/
+ruff check --line-length 100 src/ tests/
 
 # Type checking (optional)
 mypy src/
 ```
 
+### CI Pipeline
+
+The project uses GitHub Actions for continuous integration. On every push and pull request to `main`, the pipeline runs:
+
+- **Python Lint & Type Check** — Black formatting check + Ruff linting
+- **Python Unit Tests** — Unit tests (skips slow/integration tests)
+- **Swift Build** — Compiles the macOS Swift app in debug mode
+- **Dependency Audit** — Scans Python dependencies for known vulnerabilities
+
 ## Architecture
 
 ```
 parakeet-stt/
-├── src/                # Main application package
-│   ├── backends/       # Backend implementations
-│   │   ├── base.py         # Abstract backend interface
-│   │   ├── nemo_backend.py # NeMo/PyTorch backend
-│   │   ├── mlx_backend.py  # MLX/ANE backend
-│   │   └── factory.py      # Automatic backend selection
-│   ├── daemon/         # Background daemon service
-│   ├── fn_ptt/         # fn-key push-to-talk
-│   │   ├── app.py          # Event tap, recording, transcription, paste
-│   │   ├── manager.py      # Process lifecycle (PID-based)
-│   │   └── run.py          # Subprocess entry point
-│   ├── cli.py          # CLI application
-│   ├── config.py       # Configuration management
-│   ├── model.py        # Model wrapper
-│   └── output.py       # Output formatting
-└── tests/              # Test suite
+├── src/                    # Python application package
+│   ├── backends/           # Backend implementations
+│   │   ├── base.py             # Abstract backend interface
+│   │   ├── nemo_backend.py     # NeMo/PyTorch backend
+│   │   ├── mlx_backend.py      # MLX/ANE backend
+│   │   └── factory.py          # Automatic backend selection
+│   ├── daemon/             # Background recording daemon (IPC via Unix socket)
+│   │   ├── app.py              # Daemon application
+│   │   ├── controller.py       # Recording controller
+│   │   ├── ipc.py              # Unix socket IPC server/client
+│   │   ├── manager.py          # Process lifecycle (PID-based)
+│   │   └── run_daemon.py       # Subprocess entry point
+│   ├── fn_ptt/             # Python fn-key push-to-talk
+│   │   ├── app.py              # Event tap, recording, transcription, paste
+│   │   ├── manager.py          # Process lifecycle (PID-based)
+│   │   └── run.py              # Subprocess entry point
+│   ├── cli.py              # CLI application
+│   ├── config.py           # Configuration management
+│   ├── model.py            # Model wrapper
+│   └── output.py           # Output formatting
+├── swift/                  # Native macOS menu-bar app (ParakeetPTT)
+│   └── Sources/ParakeetPTT/
+│       ├── AppDelegate.swift       # App lifecycle, fn-key handling, transcription
+│       ├── AudioRecorder.swift     # AVFoundation audio capture
+│       ├── FnKeyMonitor.swift      # Global fn-key event tap
+│       ├── MenuBarView.swift       # Menu bar UI
+│       ├── TranscriptionService.swift  # CoreML/parakeet-mlx inference
+│       └── PasteService.swift      # Accessibility-based text paste
+├── scripts/
+│   ├── build-swift.sh      # Build the Swift app (debug or release)
+│   └── package-dmg.sh      # Package into a distributable DMG
+└── tests/                  # Python test suite
+```
+
+### Swift App (ParakeetPTT)
+
+The `swift/` directory contains a standalone native macOS menu-bar application that runs entirely on-device using CoreML and `parakeet-mlx`. It does not depend on the Python daemon.
+
+**Build:**
+
+```bash
+# Debug build (fast, for development)
+./scripts/build-swift.sh
+
+# Release build (optimised, for distribution)
+./scripts/build-swift.sh release
+```
+
+The script automatically prefers the swift.org toolchain (`swift-6.2.3-RELEASE`) over the Xcode Command Line Tools to avoid a known `PackageDescription` ABI mismatch. If the toolchain is not installed, it falls back to the system Swift and prints installation instructions.
+
+**Package as DMG:**
+
+```bash
+# Ad-hoc signing (local use)
+./scripts/package-dmg.sh
+
+# Developer ID signing (notarisation-ready distribution)
+CODESIGN_IDENTITY="Developer ID Application: Your Name (TEAMID)" ./scripts/package-dmg.sh
 ```
 
 ## Model Information

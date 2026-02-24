@@ -16,8 +16,8 @@ from ..config import Config
 from ..model import ModelWrapper
 
 _FN_KEYCODE = 63
-_FN_FLAG = 0x00800000       # kCGEventFlagMaskSecondaryFn
-_HOLD_THRESHOLD = 0.5       # seconds of hold before recording activates
+_FN_FLAG = 0x00800000  # kCGEventFlagMaskSecondaryFn
+_HOLD_THRESHOLD = 0.5  # seconds of hold before recording activates
 _SAMPLE_RATE = 16_000
 
 
@@ -62,9 +62,7 @@ class FnPTTApp:
     # ── event tap ─────────────────────────────────────────────────────────────
 
     def _on_event(self, proxy, event_type, event, refcon):
-        if Quartz.CGEventGetIntegerValueField(
-            event, Quartz.kCGKeyboardEventKeycode
-        ) != _FN_KEYCODE:
+        if Quartz.CGEventGetIntegerValueField(event, Quartz.kCGKeyboardEventKeycode) != _FN_KEYCODE:
             return event
         if Quartz.CGEventGetFlags(event) & _FN_FLAG:
             self._on_press()
@@ -117,6 +115,7 @@ class FnPTTApp:
 
 # ── free functions (no self needed, easier to test in isolation) ───────────────
 
+
 def _transcribe_and_paste(model: ModelWrapper, stream: sd.InputStream, buf: list) -> None:
     """Stop stream, transcribe buffered audio, paste result."""
     stream.stop()
@@ -149,6 +148,7 @@ def _transcribe_and_paste(model: ModelWrapper, stream: sd.InputStream, buf: list
 def _paste(text: str) -> None:
     """Copy text to clipboard then simulate Cmd+V into the active field."""
     import subprocess
+
     subprocess.run(["pbcopy"], input=text.encode(), check=True)
 
     src = Quartz.CGEventSourceCreate(Quartz.kCGEventSourceStateHIDSystemState)

@@ -19,9 +19,7 @@ class ModelWrapper:
         self.config = config
         self.backend = BackendFactory.create_backend(config)
 
-    def transcribe(
-        self, audio_path: Union[str, Path], timestamps: bool = True
-    ) -> Dict:
+    def transcribe(self, audio_path: Union[str, Path], timestamps: bool = True) -> Dict:
         """Transcribe audio file.
 
         Args:

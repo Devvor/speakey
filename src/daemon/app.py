@@ -9,7 +9,6 @@ from typing import Dict, Any
 from ..config import Config
 from .ipc import IPCServer
 from .controller import DaemonRecordingController
-from ..ptt.ui.overlay import StatusOverlay
 
 
 class DaemonApp:
@@ -60,6 +59,7 @@ class DaemonApp:
         # Run headless (no overlay for now - causes issues as background daemon)
         print("Daemon running. Press Ctrl+C to quit.")
         import time
+
         try:
             while True:
                 time.sleep(1)
@@ -111,6 +111,7 @@ class DaemonApp:
         except Exception as e:
             print(f"Error handling command: {e}")
             import traceback
+
             traceback.print_exc()
             return {"status": "error", "message": str(e)}
 
@@ -120,7 +121,7 @@ class DaemonApp:
         Args:
             text: Transcribed text
         """
-        print(f"\nTranscription: {text}")
+        print(f"\nTranscription complete ({len(text)} chars)")
 
 
 def main():

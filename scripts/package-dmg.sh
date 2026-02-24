@@ -15,12 +15,19 @@ VERSION="1.0.0"
 echo "=== Parakeet PTT — DMG Packager ==="
 echo ""
 
-# --- Step 1: Build release binary ---
-echo "[1/4] Building release binary..."
-cd "$SWIFT_DIR"
-swift build -c release 2>&1
+# Prefer swift.org toolchain over CLT to avoid PackageDescription ABI mismatch
+TOOLCHAIN_DIR="$HOME/Library/Developer/Toolchains/swift-6.2.3-RELEASE.xctoolchain/usr/bin"
+if [ -d "$TOOLCHAIN_DIR" ]; then
+    echo "Using swift.org toolchain"
+    export PATH="$TOOLCHAIN_DIR:$PATH"
+fi
 
-BINARY="$SWIFT_DIR/.build/release/parakeet-ptt"
+# --- Step 1: Build binary ---
+echo "[1/4] Building binary..."
+cd "$SWIFT_DIR"
+swift build 2>&1
+
+BINARY="$SWIFT_DIR/.build/debug/parakeet-ptt"
 if [ ! -f "$BINARY" ]; then
     echo "Error: Binary not found at $BINARY"
     exit 1
@@ -68,6 +75,27 @@ cat > "$APP_BUNDLE/Contents/Info.plist" << 'PLIST'
 PLIST
 
 echo "  Bundle: $APP_BUNDLE"
+
+# --- Step 2b: Code signing ---
+SIGNING_IDENTITY="${CODESIGN_IDENTITY:--}"
+if [ "$SIGNING_IDENTITY" = "-" ]; then
+    echo "  Signing: ad-hoc (local use only)"
+    echo "  For distribution, set CODESIGN_IDENTITY='Developer ID Application: Your Name'"
+else
+    echo "  Signing: $SIGNING_IDENTITY"
+fi
+codesign --force --sign "$SIGNING_IDENTITY" \
+    --entitlements /dev/stdin \
+    "$APP_BUNDLE/Contents/MacOS/parakeet-ptt" << 'ENTITLEMENTS'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>com.apple.security.device.audio-input</key>
+    <true/>
+</dict>
+</plist>
+ENTITLEMENTS
 
 # --- Step 3: Create DMG ---
 echo "[3/4] Creating DMG..."
