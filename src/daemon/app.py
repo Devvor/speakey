@@ -9,7 +9,6 @@ from typing import Dict, Any
 from ..config import Config
 from .ipc import IPCServer
 from .controller import DaemonRecordingController
-from ..ptt.ui.overlay import StatusOverlay
 
 
 class DaemonApp:

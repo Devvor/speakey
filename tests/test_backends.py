@@ -1,7 +1,6 @@
 """Tests for backend abstraction."""
 
 import pytest
-from pathlib import Path
 from unittest.mock import Mock, patch
 
 
@@ -46,7 +45,7 @@ def test_mlx_backend_initialization():
 
     config = Config()
 
-    with patch("src.backends.mlx_backend.mlx") as mock_mlx:
+    with patch("src.backends.mlx_backend.mlx"):
         backend = MLXBackend(config)
 
         assert hasattr(backend, "model")

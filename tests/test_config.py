@@ -1,7 +1,5 @@
 """Tests for configuration module."""
 
-import pytest
-from pathlib import Path
 from src.config import Config
 
 
@@ -19,7 +17,7 @@ def test_config_defaults():
 def test_config_output_dir_creation(tmp_path):
     """Test output directory is created."""
     output_dir = tmp_path / "output"
-    config = Config(output_dir=output_dir)
+    Config(output_dir=output_dir)
 
     assert output_dir.exists()
     assert output_dir.is_dir()

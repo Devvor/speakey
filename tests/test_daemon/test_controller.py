@@ -1,7 +1,7 @@
 """Tests for daemon recording controller."""
 
 import pytest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import patch
 import numpy as np
 
 from src.config import Config

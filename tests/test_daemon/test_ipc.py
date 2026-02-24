@@ -1,6 +1,5 @@
 """Tests for IPC communication."""
 
-import json
 import pytest
 import tempfile
 from pathlib import Path

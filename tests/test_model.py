@@ -1,8 +1,6 @@
 """Tests for model wrapper."""
 
-import pytest
-from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 
 
 def test_model_wrapper_initialization():

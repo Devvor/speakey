@@ -123,7 +123,7 @@ def daemon_start():
         click.echo(f"{Fore.CYAN}Socket: {manager.socket_path}")
         click.echo(f"{Fore.CYAN}Log: {manager.log_file}")
         click.echo(f"\n{Fore.CYAN}Control recording with:")
-        click.echo(f"  parakeet-stt record")
+        click.echo("  parakeet-stt record")
     else:
         click.echo(f"{Fore.RED}Failed to start daemon")
         sys.exit(1)

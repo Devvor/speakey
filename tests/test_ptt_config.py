@@ -1,7 +1,5 @@
 """Tests for push-to-talk configuration."""
 
-import pytest
-import platform
 from unittest.mock import patch
 from src.config import Config, PTTConfig
 

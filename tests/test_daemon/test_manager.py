@@ -1,7 +1,5 @@
 """Tests for daemon manager."""
 
-import pytest
-from pathlib import Path
 
 from src.daemon.manager import DaemonManager
 

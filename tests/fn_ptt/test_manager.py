@@ -1,5 +1,4 @@
 import os
-from pathlib import Path
 from unittest.mock import patch, MagicMock
 import pytest
 from src.fn_ptt.manager import FnPttManager

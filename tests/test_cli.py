@@ -1,7 +1,5 @@
 """Tests for CLI application."""
 
-import pytest
-from pathlib import Path
 from unittest.mock import Mock, patch
 from click.testing import CliRunner
 
@@ -28,7 +26,7 @@ def test_cli_transcribe_success(tmp_path):
     runner = CliRunner()
 
     with patch("src.cli.ModelWrapper") as mock_model:
-        with patch("src.cli.OutputHandler") as mock_output:
+        with patch("src.cli.OutputHandler"):
             mock_instance = Mock()
             mock_instance.transcribe.return_value = {
                 "text": "test transcription",
