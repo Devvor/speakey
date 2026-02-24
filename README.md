@@ -1,349 +1,227 @@
 # Parakeet STT
 
-Minimal speech-to-text CLI application using NVIDIA's Parakeet TDT 0.6B model, optimized for Apple Neural Engine on Mac.
+Local speech-to-text for Mac — hold **fn**, speak, release, and your words appear wherever your cursor is. Runs entirely on-device using the Apple Neural Engine. No internet required, no subscriptions.
 
-## Features
+---
 
-- 🎯 Simple CLI interface
-- 🚀 Automatic hardware optimization (ANE/GPU/CPU)
-- 📝 Text file output with timestamps
-- 🍎 Native Apple Silicon support via MLX
-- 🎮 NVIDIA GPU support via CUDA
-- 💻 CPU fallback for compatibility
-- 🎙️ fn-key push-to-talk — hold fn to dictate, releases paste into any text field
+## For Users — Install the App
 
-## Installation
+### Download & Install
 
-### Basic Installation (NeMo backend)
+1. Download the latest `ParakeetPTT.dmg` from the [Releases](../../releases) page
+2. Open the DMG and drag **ParakeetPTT** into your Applications folder
+3. Launch the app — a microphone icon appears in your menu bar
 
-```bash
-# Clone repository
-git clone <repository-url>
-cd parakeet-stt
+> **Gatekeeper warning:** The app is not yet notarized. If macOS blocks it, right-click (or Control-click) the app in Applications and choose **Open**, then click **Open** in the dialog. You only need to do this once.
 
-# Create and activate virtual environment
-python3 -m venv venv
-source venv/bin/activate  # macOS/Linux
-# OR on Windows: venv\Scripts\activate
+### Grant Permissions (one-time)
 
-# Upgrade pip and install dependencies
-pip install --upgrade pip
-pip install -r requirements.txt
-```
+The app needs three permissions. macOS will prompt for most of them automatically on first use, but you can also grant them manually:
 
-### Apple Silicon Installation (MLX backend)
+**System Settings → Privacy & Security**
 
-```bash
-# Follow basic installation steps above, then:
+| Permission | Why it's needed |
+|---|---|
+| **Input Monitoring** | Detect when you hold the fn key |
+| **Microphone** | Record your voice |
+| **Accessibility** | Paste transcribed text into any app |
 
-# Ensure venv is activated (you should see (venv) in your prompt)
-source venv/bin/activate  # macOS/Linux
+After granting permissions, restart the app.
 
-# Install MLX dependencies for Apple Neural Engine
-pip install -r requirements-mlx.txt
-```
+### How to Use
 
-## Usage
+1. Click into any text field (email, Slack, Notes, terminal — anything)
+2. Hold **fn** for at least half a second and speak
+3. Release **fn**
+4. Your words appear in the text field within 1–2 seconds
 
-### Basic Transcription
+The model loads once when you start the app (~10–30 seconds). After that, each dictation is near-instant.
 
-```bash
-# Transcribe audio file
-parakeet-stt transcribe audio.wav
+### Menu Bar
 
-# Specify output directory
-parakeet-stt transcribe audio.wav --output-dir results/
+Click the microphone icon in the menu bar to:
+- See the current status (loading / ready / recording)
+- Quit the app
 
-# Disable timestamps
-parakeet-stt transcribe audio.wav --no-timestamps
+### Troubleshooting
 
-# Force specific device
-parakeet-stt transcribe audio.wav --device cpu
-```
+**Nothing happens when I hold fn**
+→ Check that **Input Monitoring** is granted in System Settings → Privacy & Security → Input Monitoring. The app must be listed there.
 
-### fn-key Push-to-Talk
+**Audio records but text doesn't appear**
+→ Check that **Accessibility** is granted in System Settings → Privacy & Security → Accessibility.
 
-Loads the model once in the background. Hold **fn** for ≥0.5s to record, release to transcribe and paste into the active text field.
+**No audio is captured**
+→ Check that **Microphone** is granted in System Settings → Privacy & Security → Microphone.
 
-#### macOS Permissions (one-time setup)
+**macOS says the app is damaged or can't be opened**
+→ Right-click the app → Open → Open. If that doesn't work, run: `xattr -dr com.apple.quarantine /Applications/ParakeetPTT.app`
 
-Go to **System Settings → Privacy & Security** and add your terminal app to:
-- **Input Monitoring** — required for fn key detection
-- **Microphone** — required for audio recording
+**The app is slow on first dictation**
+→ The model is still loading. Wait for the menu bar icon to show "Ready" before dictating.
 
-#### Commands
+---
 
-```bash
-# Start the daemon
-parakeet-stt fn-ptt start
+## For Developers
 
-# Check status
-parakeet-stt fn-ptt status
+The repo contains both the native Swift menu-bar app (`swift/`) and a Python CLI / daemon (`src/`) that can be used independently.
 
-# Stop the daemon
-parakeet-stt fn-ptt stop
-```
-
-#### How it works
-
-1. `fn-ptt start` loads the model in the background (~10–30s on first run)
-2. Click into any text field
-3. Hold **fn** for at least 0.5 seconds and speak
-4. Release **fn** — transcription appears in the text field within ~1–2s
-5. Repeat as many times as needed without reloading the model
-
-Logs are written to `~/.parakeet-stt/fn-ptt.log` if anything goes wrong.
-
-### Background Daemon
-
-```bash
-# Start daemon
-parakeet-stt daemon start
-
-# Check status
-parakeet-stt daemon status
-
-# Stop daemon
-parakeet-stt daemon stop
-
-# Control recording
-parakeet-stt record        # toggle
-parakeet-stt record start
-parakeet-stt record stop
-```
-
-### Supported Audio Formats
-
-- WAV (16kHz monochannel recommended)
-- FLAC
-
-### Output Format
-
-Transcriptions are saved as `.txt` files with the same name as the input audio:
-
-```
-Transcription:
-==================================================
-This is the transcribed text from your audio file.
-
-Timestamps:
---------------------------------------------------
-
-Word-level:
-  0.00s - 0.50s: This
-  0.50s - 0.80s: is
-  ...
-
-Segment-level:
-  0.00s - 2.50s: This is the transcribed text
-  ...
-```
-
-## Hardware Acceleration
-
-The application automatically selects the best backend:
-
-| Platform | Backend | Hardware | Performance |
-|----------|---------|----------|-------------|
-| Mac (Apple Silicon) | MLX | Apple Neural Engine | 10x faster |
-| Mac (Intel) | NeMo | CPU/GPU | Baseline |
-| Linux/Windows (NVIDIA) | NeMo | CUDA GPU | 3-5x faster |
-| Other | NeMo | CPU | Baseline |
-
-### Force Specific Backend
-
-```bash
-# Use specific device
-parakeet-stt transcribe audio.wav --device mps   # Mac GPU
-parakeet-stt transcribe audio.wav --device cuda  # NVIDIA
-parakeet-stt transcribe audio.wav --device cpu   # CPU only
-```
-
-## Development
-
-**IMPORTANT:** Always activate your virtual environment before running development commands:
-
-```bash
-source venv/bin/activate  # macOS/Linux
-# OR on Windows: venv\Scripts\activate
-```
-
-### Pre-commit Hooks
-
-Install pre-commit hooks to automatically format and lint code before each commit:
-
-```bash
-pip install pre-commit
-pre-commit install
-```
-
-Hooks run automatically on `git commit`. To run them manually on all files:
-
-```bash
-pre-commit run --all-files
-```
-
-### Run Tests
-
-```bash
-# Ensure venv is activated (you should see (venv) in your prompt)
-pip install pytest pytest-cov pytest-mock
-
-# Run all tests
-pytest
-
-# Run without slow tests
-pytest -m "not slow"
-
-# Run with coverage
-pytest --cov=src
-```
-
-### Code Quality
-
-```bash
-# Ensure venv is activated
-
-# Format code
-black --line-length 100 src/ tests/
-
-# Lint code
-ruff check --line-length 100 src/ tests/
-
-# Type checking (optional)
-mypy src/
-```
-
-### CI Pipeline
-
-The project uses GitHub Actions for continuous integration. On every push and pull request to `main`, the pipeline runs:
-
-- **Python Lint & Type Check** — Black formatting check + Ruff linting
-- **Python Unit Tests** — Unit tests (skips slow/integration tests)
-- **Swift Build** — Compiles the macOS Swift app in debug mode
-- **Dependency Audit** — Scans Python dependencies for known vulnerabilities
-
-## Architecture
+### Project Structure
 
 ```
 parakeet-stt/
-├── src/                    # Python application package
-│   ├── backends/           # Backend implementations
-│   │   ├── base.py             # Abstract backend interface
-│   │   ├── nemo_backend.py     # NeMo/PyTorch backend
-│   │   ├── mlx_backend.py      # MLX/ANE backend
-│   │   └── factory.py          # Automatic backend selection
-│   ├── daemon/             # Background recording daemon (IPC via Unix socket)
-│   │   ├── app.py              # Daemon application
-│   │   ├── controller.py       # Recording controller
-│   │   ├── ipc.py              # Unix socket IPC server/client
-│   │   ├── manager.py          # Process lifecycle (PID-based)
-│   │   └── run_daemon.py       # Subprocess entry point
+├── src/                    # Python CLI and daemon
+│   ├── backends/           # Backend implementations (NeMo, MLX)
+│   ├── daemon/             # Background recording daemon (Unix socket IPC)
 │   ├── fn_ptt/             # Python fn-key push-to-talk
-│   │   ├── app.py              # Event tap, recording, transcription, paste
-│   │   ├── manager.py          # Process lifecycle (PID-based)
-│   │   └── run.py              # Subprocess entry point
-│   ├── cli.py              # CLI application
+│   ├── cli.py              # Click-based CLI
 │   ├── config.py           # Configuration management
 │   ├── model.py            # Model wrapper
 │   └── output.py           # Output formatting
 ├── swift/                  # Native macOS menu-bar app (ParakeetPTT)
 │   └── Sources/ParakeetPTT/
-│       ├── AppDelegate.swift       # App lifecycle, fn-key handling, transcription
-│       ├── AudioRecorder.swift     # AVFoundation audio capture
-│       ├── FnKeyMonitor.swift      # Global fn-key event tap
-│       ├── MenuBarView.swift       # Menu bar UI
-│       ├── TranscriptionService.swift  # CoreML/parakeet-mlx inference
-│       └── PasteService.swift      # Accessibility-based text paste
+│       ├── AppDelegate.swift
+│       ├── AudioRecorder.swift
+│       ├── FnKeyMonitor.swift
+│       ├── MenuBarView.swift
+│       ├── TranscriptionService.swift
+│       └── PasteService.swift
 ├── scripts/
 │   ├── build-swift.sh      # Build the Swift app (debug or release)
 │   └── package-dmg.sh      # Package into a distributable DMG
 └── tests/                  # Python test suite
 ```
 
-### Swift App (ParakeetPTT)
-
-The `swift/` directory contains a standalone native macOS menu-bar application that runs entirely on-device using CoreML and `parakeet-mlx`. It does not depend on the Python daemon.
-
-**Build:**
+### Quick Start
 
 ```bash
-# Debug build (fast, for development)
-./scripts/build-swift.sh
+source venv/bin/activate
 
-# Release build (optimised, for distribution)
-./scripts/build-swift.sh release
-```
+# Build Swift app
+./scripts/build-swift.sh          # debug
+./scripts/build-swift.sh release  # optimised
 
-The script automatically prefers the swift.org toolchain (`swift-6.2.3-RELEASE`) over the Xcode Command Line Tools to avoid a known `PackageDescription` ABI mismatch. If the toolchain is not installed, it falls back to the system Swift and prints installation instructions.
-
-**Package as DMG:**
-
-```bash
-# Ad-hoc signing (local use)
+# Package as DMG
 ./scripts/package-dmg.sh
 
-# Developer ID signing (notarisation-ready distribution)
+# Run Python CLI
+parakeet-stt transcribe audio.wav
+parakeet-stt fn-ptt start
+```
+
+### Python Installation
+
+```bash
+git clone <repository-url>
+cd parakeet-stt
+
+python3 -m venv venv
+source venv/bin/activate
+
+pip install --upgrade pip
+pip install -r requirements.txt
+
+# Apple Silicon — also install MLX dependencies
+pip install -r requirements-mlx.txt
+```
+
+### Python CLI Usage
+
+```bash
+# Transcribe a file
+parakeet-stt transcribe audio.wav
+parakeet-stt transcribe audio.wav --output-dir results/
+parakeet-stt transcribe audio.wav --no-timestamps
+parakeet-stt transcribe audio.wav --device cpu
+
+# fn-key push-to-talk (Python daemon)
+parakeet-stt fn-ptt start
+parakeet-stt fn-ptt status
+parakeet-stt fn-ptt stop
+
+# Background recording daemon
+parakeet-stt daemon start
+parakeet-stt daemon status
+parakeet-stt daemon stop
+parakeet-stt record start
+parakeet-stt record stop
+```
+
+### Backend Selection
+
+The Python CLI automatically picks the best available backend:
+
+| Platform | Backend | Hardware | Performance |
+|---|---|---|---|
+| Mac (Apple Silicon) | MLX | Apple Neural Engine | 10x faster |
+| Mac (Intel) | NeMo | CPU | Baseline |
+| Linux/Windows (NVIDIA) | NeMo | CUDA | 3–5x faster |
+| Other | NeMo | CPU | Baseline |
+
+### Building the Swift App
+
+```bash
+# Debug build
+./scripts/build-swift.sh
+
+# Release build
+./scripts/build-swift.sh release
+
+# Ad-hoc signed DMG (local use)
+./scripts/package-dmg.sh
+
+# Developer ID signed DMG (distribution-ready)
 CODESIGN_IDENTITY="Developer ID Application: Your Name (TEAMID)" ./scripts/package-dmg.sh
 ```
 
-## Model Information
+The build script prefers the swift.org toolchain (`swift-6.2.3-RELEASE`) over Xcode Command Line Tools to avoid a known `PackageDescription` ABI mismatch.
 
-- **Model:** nvidia/parakeet-tdt-0.6b-v3
+### Testing
+
+```bash
+source venv/bin/activate
+
+pip install pytest pytest-cov pytest-mock
+
+pytest                        # all tests
+pytest -m "not slow"          # skip integration tests
+pytest --cov=src              # with coverage
+```
+
+### Code Quality
+
+```bash
+# Format
+black --line-length 100 src/ tests/
+
+# Lint
+ruff check --line-length 100 src/ tests/
+
+# Pre-commit hooks (one-time setup)
+pip install pre-commit
+pre-commit install
+```
+
+### CI Pipeline
+
+GitHub Actions runs on every push and PR to `main`:
+
+| Job | What it does |
+|---|---|
+| `python-lint` | Black + Ruff |
+| `python-test` | Unit tests (skips slow/integration) |
+| `swift-build` | Swift debug build |
+| `dependency-audit` | `pip-audit` on requirements.txt |
+
+---
+
+## Model
+
+- **Model:** [nvidia/parakeet-tdt-0.6b-v3](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3)
 - **Parameters:** 600 million
 - **Architecture:** FastConformer-TDT
 - **Word Error Rate:** 6.05% average
 - **License:** CC-BY-4.0
-
-## Troubleshooting
-
-### fn-ptt: Could not create event tap
-
-Grant **Input Monitoring** permission to your terminal app:
-System Settings → Privacy & Security → Input Monitoring
-
-### fn-ptt: No audio recorded
-
-Grant **Microphone** permission to your terminal app:
-System Settings → Privacy & Security → Microphone
-
-### fn-ptt: Check the log
-
-```bash
-tail -f ~/.parakeet-stt/fn-ptt.log
-```
-
-### macOS: MPS Backend Not Available
-
-```bash
-# Enable MPS fallback
-export PYTORCH_ENABLE_MPS_FALLBACK=1
-parakeet-stt transcribe audio.wav
-```
-
-### MLX Backend Not Loading
-
-```bash
-# Check MLX installation
-python -c "import mlx; print(mlx.__version__)"
-
-# Reinstall MLX dependencies
-pip install -r requirements-mlx.txt --force-reinstall
-```
-
-### CUDA Out of Memory
-
-```bash
-# Use CPU instead
-parakeet-stt transcribe audio.wav --device cpu
-```
-
-## References
-
-- [Parakeet TDT Model](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3)
-- [NeMo Documentation](https://docs.nvidia.com/nemo-framework/)
-- [Apple MLX Framework](https://github.com/ml-explore/mlx)
-- [Parakeet MLX Implementation](https://github.com/EliFuzz/parakeet-mlx)
 
 ## License
 
