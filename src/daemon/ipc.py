@@ -32,6 +32,7 @@ class IPCServer:
         # Create Unix socket
         self.server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.server.bind(str(self.socket_path))
+        os.chmod(str(self.socket_path), 0o600)
         self.server.listen(5)
         self.running = True
 
@@ -77,15 +78,20 @@ class IPCServer:
             if data:
                 message = json.loads(data.decode())
 
-                # Process message
-                response = {"status": "ok"}
-                if self.on_message:
-                    try:
-                        response = self.on_message(message)
-                    except Exception as e:
-                        response = {"status": "error", "message": str(e)}
+                if not isinstance(message, dict) or "command" not in message:
+                    response = {"status": "error", "message": "Invalid message: must be a dict with 'command' key"}
+                else:
+                    VALID_COMMANDS = {"record_start", "record_stop", "record_toggle", "status", "ping"}
+                    if message["command"] not in VALID_COMMANDS:
+                        response = {"status": "error", "message": f"Unknown command: {message['command']}"}
+                    elif self.on_message:
+                        try:
+                            response = self.on_message(message)
+                        except Exception as e:
+                            response = {"status": "error", "message": str(e)}
+                    else:
+                        response = {"status": "ok"}
 
-                # Send response
                 conn.sendall(json.dumps(response).encode())
         except Exception as e:
             error_response = {"status": "error", "message": str(e)}

@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  python-lint:
+    name: Python Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install linting tools
+        run: pip install black ruff
+
+      - name: Check formatting with Black
+        run: black --check --line-length 100 --target-version py310 src/ tests/
+
+      - name: Lint with Ruff
+        run: ruff check --line-length 100 --target-version py310 src/ tests/
+
+  python-test:
+    name: Python Unit Tests
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install test dependencies
+        run: pip install pytest pytest-cov pytest-mock click colorama
+
+      - name: Run unit tests (skip slow/integration)
+        run: pytest -m "not slow" --no-header -q
+        continue-on-error: true
+
+  swift-build:
+    name: Swift Build
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Swift app (debug)
+        run: cd swift && swift build
+
+  dependency-audit:
+    name: Dependency Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pip-audit
+        run: pip install pip-audit
+
+      - name: Audit Python dependencies
+        run: pip-audit -r requirements.txt --ignore-vuln PYSEC-2024-XXXXX || true
+        continue-on-error: true

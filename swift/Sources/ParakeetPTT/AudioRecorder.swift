@@ -1,4 +1,4 @@
-import AVFoundation
+@preconcurrency import AVFoundation
 
 final class AudioRecorder {
     private var engine: AVAudioEngine?
@@ -73,7 +73,7 @@ final class AudioRecorder {
         ) else { return }
 
         var error: NSError?
-        var consumed = false
+        nonisolated(unsafe) var consumed = false
         converter.convert(to: outputBuffer, error: &error) { _, outStatus in
             if consumed {
                 outStatus.pointee = .noDataNow

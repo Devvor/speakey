@@ -161,7 +161,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
             do {
                 let text = try await transcriptionService.transcribe(samples)
-                print("[PTT] Transcription result: '\(text)'")
+                print("[PTT] Transcription complete (\(text.count) chars)")
                 if !text.isEmpty {
                     PasteService.paste(text)
                     appState.lastTranscription = text

@@ -120,7 +120,7 @@ class DaemonApp:
         Args:
             text: Transcribed text
         """
-        print(f"\nTranscription: {text}")
+        print(f"\nTranscription complete ({len(text)} chars)")
 
 
 def main():
