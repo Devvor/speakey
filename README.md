@@ -1,4 +1,4 @@
-# Parakeet STT
+# Kuaishuo
 
 Local speech-to-text for Mac — hold **fn**, speak, release, and your words appear wherever your cursor is. Runs entirely on-device using the Apple Neural Engine. No internet required, no subscriptions.
 
