@@ -23,11 +23,16 @@ if [ -d "$TOOLCHAIN_DIR" ]; then
 fi
 
 # --- Step 1: Build binary ---
-echo "[1/4] Building binary..."
+BUILD_MODE="${BUILD_MODE:-debug}"
+echo "[1/4] Building binary ($BUILD_MODE)..."
 cd "$SWIFT_DIR"
-swift build 2>&1
+swift build -c "$BUILD_MODE" 2>&1
 
-BINARY="$SWIFT_DIR/.build/debug/parakeet-ptt"
+if [ "$BUILD_MODE" = "release" ]; then
+    BINARY="$SWIFT_DIR/.build/release/parakeet-ptt"
+else
+    BINARY="$SWIFT_DIR/.build/debug/parakeet-ptt"
+fi
 if [ ! -f "$BINARY" ]; then
     echo "Error: Binary not found at $BINARY"
     exit 1

@@ -22,6 +22,7 @@ let package = Package(
                 .linkedFramework("AVFoundation"),
                 .linkedFramework("CoreGraphics"),
                 .linkedFramework("AppKit"),
+                .linkedFramework("ServiceManagement"),
             ]
         ),
     ]

@@ -2,7 +2,7 @@ import CoreGraphics
 import Foundation
 
 final class FnKeyMonitor: @unchecked Sendable {
-    private let holdThreshold: TimeInterval = 0.5
+    private let holdThreshold: TimeInterval = 0.3
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
     private var fnPressTime: Date?
