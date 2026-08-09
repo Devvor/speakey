@@ -36,15 +36,16 @@ class OverlayPanel: NSPanel {
         let fittingSize = hostingView.fittingSize
         contentView = hostingView
         setContentSize(fittingSize)
-        positionAtTopCenter()
+        positionAtBottomCenter()
         orderFrontRegardless()
     }
 
-    func positionAtTopCenter() {
+    func positionAtBottomCenter() {
         guard let screen = NSScreen.main else { return }
         let visibleFrame = screen.visibleFrame
         let x = visibleFrame.midX - (frame.width / 2)
-        let y = visibleFrame.maxY - frame.height - 20
+        // Sit above the dock/menu-safe area, a bit higher than flush-bottom.
+        let y = visibleFrame.minY + 56
         setFrameOrigin(NSPoint(x: x, y: y))
     }
 }

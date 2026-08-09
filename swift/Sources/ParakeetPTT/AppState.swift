@@ -14,6 +14,8 @@ final class AppState {
 
     var status: Status = .loadingModel
     var lastTranscription: String = ""
+    /// True while recording in fn+Space hands-free mode (no need to hold fn).
+    var isHandsFree = false
 
     var isRecording: Bool { status == .recording }
     var statusText: String {
@@ -21,7 +23,7 @@ final class AppState {
         case .downloading:        return "Downloading model (~2.5GB)..."
         case .loadingModel:       return "Loading model..."
         case .ready:              return "Ready"
-        case .recording:          return "Recording..."
+        case .recording:          return isHandsFree ? "Listening (hands-free)..." : "Recording..."
         case .transcribing:       return "Transcribing..."
         case .error(let message): return "Error: \(message)"
         }
