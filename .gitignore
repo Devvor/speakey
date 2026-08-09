@@ -39,8 +39,9 @@ htmlcov/
 .env
 .env.local
 
-# Claude
+# Claude / local agent tooling
 .claude/
+.serena/
 
 # Git worktrees
 .worktrees/
