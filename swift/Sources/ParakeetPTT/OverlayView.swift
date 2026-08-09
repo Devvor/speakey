@@ -27,6 +27,10 @@ struct OverlayView: View {
         case .transcribing:
             ProgressView()
                 .controlSize(.small)
+        case .error:
+            Image(systemName: "exclamationmark.circle.fill")
+                .foregroundStyle(.orange)
+                .font(.system(size: 12))
         default:
             EmptyView()
         }
@@ -40,6 +44,8 @@ struct OverlayView: View {
                 : "Recording… Esc to cancel"
         case .transcribing:
             return "Transcribing..."
+        case .error(let message):
+            return message
         default:
             return ""
         }

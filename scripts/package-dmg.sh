@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# scripts/package-dmg.sh — Build .app bundle and create .dmg for distribution
+# scripts/package-dmg.sh — Optional local .app / DMG helper.
+# Not the supported install path. Preferred: ./scripts/build-swift.sh && run the binary.
+# No public releases, notarization, or auto-update feed.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -140,8 +142,11 @@ echo ""
 echo "  DMG:     $DMG_PATH"
 echo "  Size:    $(du -h "$DMG_PATH" | cut -f1)"
 echo ""
-echo "To install:"
+echo "Optional local package only (not a public release)."
+echo "Preferred install: ./scripts/build-swift.sh && run the printed binary path."
+echo ""
+echo "If you use this DMG on your machine:"
 echo "  1. Open $DMG_NAME"
 echo "  2. Drag Parakeet PTT to Applications"
-echo "  3. Right-click > Open (first launch only, bypasses Gatekeeper)"
+echo "  3. Right-click > Open if macOS blocks the unsigned app"
 echo "  4. Grant Microphone + Accessibility permissions when prompted"

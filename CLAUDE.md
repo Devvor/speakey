@@ -23,8 +23,9 @@ parakeet-stt transcribe audio.wav
 # fn-key push-to-talk (Python daemon)
 parakeet-stt fn-ptt start
 
-# Build the native Swift menu-bar app
+# Build & run the native Swift menu-bar app (source-first; no public DMG)
 ./scripts/build-swift.sh          # debug
+./swift/.build/debug/parakeet-ptt
 ./scripts/build-swift.sh release  # release
 ```
 
@@ -67,7 +68,7 @@ parakeet-stt/
 │
 ├── scripts/
 │   ├── build-swift.sh           # Build Swift app (debug/release)
-│   └── package-dmg.sh           # Package as distributable DMG
+│   └── package-dmg.sh           # Optional local .app/DMG only (not public releases)
 │
 ├── tests/                       # Python test suite
 │   ├── conftest.py              # Shared fixtures
@@ -161,14 +162,16 @@ parakeet-stt daemon start
 - ✅ Backend abstraction layer (`src/backends/`)
 - ✅ MLX backend for Apple Silicon
 - ✅ Swift macOS menu-bar app (ParakeetPTT) using CoreML + parakeet-mlx
-- ✅ DMG packaging with ad-hoc and Developer ID code signing
+- ✅ Optional local DMG packaging script (not public distribution)
 - ✅ GitHub Actions CI pipeline
 - ✅ Pre-commit hooks
+- ✅ Source-first install path (clone → build → run)
+
+**Distribution:** source-first (clone → `./scripts/build-swift.sh` → run). No public DMG, notarization, or Sparkle.
 
 **In progress / next:**
-- [ ] Notarization for Gatekeeper-safe distribution
+- [ ] Keep build-from-source / agent-friendly docs accurate
 - [ ] Performance benchmarking vs Python daemon
-- [ ] Auto-updater
 
 ---
 
@@ -304,9 +307,8 @@ pytest tests/test_model.py::test_model_wrapper_initialization -v -s
 ./scripts/build-swift.sh          # debug (default)
 ./scripts/build-swift.sh release  # optimised binary
 
-# Package DMG
+# Optional local DMG only (not for public distribution)
 ./scripts/package-dmg.sh
-CODESIGN_IDENTITY="Developer ID Application: ..." ./scripts/package-dmg.sh
 ```
 
 ### Git Workflow
@@ -555,7 +557,7 @@ time parakeet-stt transcribe 2086-149220-0033.wav  # Auto-detect
 
 ### Build & Packaging
 - `scripts/build-swift.sh` - Build Swift app (`debug` or `release` arg)
-- `scripts/package-dmg.sh` - Create distributable DMG with code signing
+- `scripts/package-dmg.sh` - Optional local .app/DMG helper (not public releases)
 
 ### CI & Quality
 - `.github/workflows/ci.yml` - GitHub Actions (lint, test, Swift build, dep audit)
@@ -592,12 +594,11 @@ time parakeet-stt transcribe 2086-149220-0033.wav  # Auto-detect
 - [x] Backend abstraction layer (`src/backends/`)
 - [x] MLX backend for Apple Silicon
 - [x] Swift menu-bar app (ParakeetPTT) — CoreML inference
-- [x] DMG packaging with code signing
+- [x] Optional local DMG packaging script (not public distribution)
 - [x] CI pipeline (GitHub Actions)
 - [x] Pre-commit hooks
-- [ ] Notarization for Gatekeeper-safe distribution
+- [x] Source-first install docs (clone → build → run; agent-friendly)
 - [ ] Performance benchmarking (Swift CoreML vs Python NeMo)
-- [ ] Auto-updater / Sparkle integration
 
 ---
 
@@ -612,9 +613,10 @@ time parakeet-stt transcribe 2086-149220-0033.wav  # Auto-detect
 
 ---
 
-**Last Updated:** 2026-02-24
+**Last Updated:** 2026-08-09
 **Python Version:** 3.10+ (venv: 3.14)
 **Current Phase:** Phase 3 (Native macOS App)
 **Phase 1 Status:** ✅ Complete
 **Phase 2 Status:** ✅ Complete (CLI + daemon + fn-ptt)
-**Next Task:** Notarization + performance benchmarking
+**Distribution:** Source-first (no public DMG / notarization / Sparkle)
+**Next Task:** Keep build-from-source path solid; optional performance benchmarking

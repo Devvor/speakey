@@ -35,25 +35,49 @@ final class FnKeyMonitor: @unchecked Sendable {
             return false
         }
 
-        let flagsMonitor = NSEvent.addGlobalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
-            self?.handleFlagsChanged(event)
-        }
-        let keyMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            self?.handleKeyDown(event)
-        }
-
-        if let flagsMonitor {
+        // Global monitors cover other apps; local monitors cover when this app is focused
+        // (global monitors do not receive events while the app is key).
+        if let flagsMonitor = NSEvent.addGlobalMonitorForEvents(
+            matching: .flagsChanged,
+            handler: { [weak self] event in
+                self?.handleFlagsChanged(event)
+            }
+        ) {
             monitors.append(flagsMonitor)
         }
-        if let keyMonitor {
+        if let keyMonitor = NSEvent.addGlobalMonitorForEvents(
+            matching: .keyDown,
+            handler: { [weak self] event in
+                self?.handleKeyDown(event)
+            }
+        ) {
+            monitors.append(keyMonitor)
+        }
+
+        if let flagsMonitor = NSEvent.addLocalMonitorForEvents(
+            matching: .flagsChanged,
+            handler: { [weak self] event in
+                self?.handleFlagsChanged(event)
+                return event
+            }
+        ) {
+            monitors.append(flagsMonitor)
+        }
+        if let keyMonitor = NSEvent.addLocalMonitorForEvents(
+            matching: .keyDown,
+            handler: { [weak self] event in
+                let consume = self?.handleKeyDown(event) ?? false
+                return consume ? nil : event
+            }
+        ) {
             monitors.append(keyMonitor)
         }
 
         let ok = !monitors.isEmpty
         if ok {
-            PTTLog.write("Fn key monitor started (NSEvent global monitor)")
+            PTTLog.write("Fn key monitor started (NSEvent global + local monitors)")
         } else {
-            PTTLog.write("Event monitor failed: addGlobalMonitorForEvents returned nil")
+            PTTLog.write("Event monitor failed: add*MonitorForEvents returned nil")
         }
         return ok
     }
@@ -107,22 +131,34 @@ final class FnKeyMonitor: @unchecked Sendable {
         }
     }
 
-    private func handleKeyDown(_ event: NSEvent) {
+    /// Returns `true` when the local monitor should swallow the event (Esc / fn+Space).
+    @discardableResult
+    private func handleKeyDown(_ event: NSEvent) -> Bool {
         // 53 = Escape, 49 = Space
         if event.keyCode == 53 {
+            let shouldConsume: Bool
+            switch mode {
+            case .holding, .handsFree, .pressPending:
+                shouldConsume = true
+            case .idle:
+                shouldConsume = false
+            }
             DispatchQueue.main.async { [weak self] in
                 self?.handleEscape()
             }
-            return
+            return shouldConsume
         }
 
         if event.keyCode == 49 {
             let fnHeld = event.modifierFlags.contains(.function) || fnWasDown
-            guard fnHeld else { return }
+            guard fnHeld else { return false }
             DispatchQueue.main.async { [weak self] in
                 self?.handleFnSpace()
             }
+            return true
         }
+
+        return false
     }
 
     // MARK: - State machine (main queue)

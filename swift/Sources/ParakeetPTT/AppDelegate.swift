@@ -178,17 +178,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             let duration = Double(samples.count) / 16000.0
             print("[PTT] Captured \(samples.count) samples (\(String(format: "%.1f", duration))s of audio)")
 
-            // Check audio levels
-            if !samples.isEmpty {
+            let rms: Float
+            if samples.isEmpty {
+                rms = 0
+            } else {
                 let maxAmp = samples.map { abs($0) }.max() ?? 0
-                let rms = sqrt(samples.map { $0 * $0 }.reduce(0, +) / Float(samples.count))
+                rms = sqrt(samples.map { $0 * $0 }.reduce(0, +) / Float(samples.count))
                 print("[PTT] Audio levels — max: \(maxAmp), RMS: \(rms)")
             }
 
-            guard !samples.isEmpty else {
-                print("[PTT] No samples captured, skipping transcription")
-                appState.status = .ready
-                hideOverlay()
+            // Too short or near-silent — skip inference and explain briefly.
+            let minDuration = 0.25
+            let minRMS: Float = 0.004
+            if samples.isEmpty || duration < minDuration || rms < minRMS {
+                print("[PTT] Skipping transcription — empty/short/silent audio")
+                await showTransientNotice("No speech detected")
                 return
             }
 
@@ -198,17 +202,28 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 if !text.isEmpty {
                     PasteService.paste(text)
                     appState.lastTranscription = text
+                    appState.status = .ready
+                    hideOverlay()
                 } else {
                     print("[PTT] Transcription returned empty text")
+                    await showTransientNotice("No speech detected")
                 }
             } catch {
                 print("[PTT] Transcription error: \(error)")
-                appState.status = .error("Transcription failed: \(error.localizedDescription)")
+                await showTransientNotice("Transcription failed", recoverToReady: true)
             }
-
-            appState.status = .ready
-            hideOverlay()
         }
+    }
+
+    /// Brief overlay/status message, then return to ready (avoids stuck error state).
+    private func showTransientNotice(_ message: String, recoverToReady: Bool = true) async {
+        appState.status = .error(message)
+        updateOverlay()
+        try? await Task.sleep(nanoseconds: 1_800_000_000)
+        if recoverToReady {
+            appState.status = .ready
+        }
+        hideOverlay()
     }
 
     private func cancelRecording() {

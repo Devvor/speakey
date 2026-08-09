@@ -2,75 +2,102 @@
 
 Local speech-to-text for Mac — hold **fn**, speak, release, and your words appear wherever your cursor is. Runs entirely on-device using the Apple Neural Engine. No internet required, no subscriptions.
 
+**Distribution model:** source-first. There is no public DMG or App Store build. Clone the repo, build on your Mac (or point an AI coding agent at the repo and ask it to build), then run the binary. The menu-bar app target is named **ParakeetPTT**.
+
+This repository also includes an optional Python CLI under `src/`.
+
 ---
 
-## For Users — Install the App
+## Install — build from source
 
-### Download & Install
+### Requirements
 
-1. Download the latest `ParakeetPTT.dmg` from the [Releases](../../releases) page
-2. Open the DMG and drag **ParakeetPTT** into your Applications folder
-3. Launch the app — a microphone icon appears in your menu bar
+- Apple Silicon Mac (recommended) running **macOS 14+**
+- Swift toolchain (Xcode or Command Line Tools; the build script prefers the [swift.org](https://www.swift.org/download/) `swift-6.2.3-RELEASE` toolchain if installed)
 
-> **Gatekeeper warning:** The app is not yet notarized. If macOS blocks it, right-click (or Control-click) the app in Applications and choose **Open**, then click **Open** in the dialog. You only need to do this once.
+### Build & run
 
-### Grant Permissions (one-time)
+```bash
+git clone https://github.com/Devvor/kuaishuo.git
+cd kuaishuo
 
-The app needs three permissions. macOS will prompt for most of them automatically on first use, but you can also grant them manually:
+./scripts/build-swift.sh          # debug (default)
+# ./scripts/build-swift.sh release  # optimised
+
+# Run the menu-bar app
+./swift/.build/debug/parakeet-ptt
+# or, after a release build:
+# ./swift/.build/release/parakeet-ptt
+```
+
+First launch downloads the CoreML model (~2.5GB) into the app cache. Later launches reuse it.
+
+**For AI agents:** the only required steps are clone → `./scripts/build-swift.sh` → run the binary path printed at the end of the script → grant permissions below → quit and reopen once.
+
+### Grant permissions (one-time)
 
 **System Settings → Privacy & Security**
 
 | Permission | Why it's needed |
 |---|---|
-| **Input Monitoring** | Detect when you hold the fn key |
+| **Accessibility** | Detect fn / fn+Space / Esc, and paste transcribed text into any app |
 | **Microphone** | Record your voice |
-| **Accessibility** | Paste transcribed text into any app |
 
-After granting permissions, restart the app.
+After granting permissions, quit the app and start it again.
 
-### How to Use
+### How to use
 
 1. Click into any text field (email, Slack, Notes, terminal — anything)
-2. Hold **fn** for at least half a second and speak
-3. Release **fn**
+2. Hold **fn** for about **0.3 seconds** and speak (or press **fn+Space** for hands-free; **Esc** to cancel)
+3. Release **fn** (or tap **fn** again in hands-free mode)
 4. Your words appear in the text field within 1–2 seconds
 
-The model loads once when you start the app (~10–30 seconds). After that, each dictation is near-instant.
-
-### Menu Bar
+### Menu bar
 
 Click the microphone icon in the menu bar to:
+
 - See the current status (loading / ready / recording)
+- Enable launch at login
 - Quit the app
 
 ### Troubleshooting
 
-**Nothing happens when I hold fn**
-→ Check that **Input Monitoring** is granted in System Settings → Privacy & Security → Input Monitoring. The app must be listed there.
+**Nothing happens when I hold fn**  
+→ Grant **Accessibility**, then quit and reopen the app. If you rebuild to a new path, remove the old binary from the Accessibility list and add the new one.
 
-**Audio records but text doesn't appear**
-→ Check that **Accessibility** is granted in System Settings → Privacy & Security → Accessibility.
+**Audio records but text doesn't appear**  
+→ Accessibility is also required for paste.
 
-**No audio is captured**
-→ Check that **Microphone** is granted in System Settings → Privacy & Security → Microphone.
+**No audio is captured**  
+→ Grant **Microphone**, then quit and reopen.
 
-**macOS says the app is damaged or can't be opened**
-→ Right-click the app → Open → Open. If that doesn't work, run: `xattr -dr com.apple.quarantine /Applications/ParakeetPTT.app`
+**Build fails with `PackageDescription` / undefined symbols**  
+→ Install the swift.org toolchain and re-run `./scripts/build-swift.sh` (the script documents the exact package URL).
 
-**The app is slow on first dictation**
-→ The model is still loading. Wait for the menu bar icon to show "Ready" before dictating.
+**macOS blocks the binary**  
+→ Right-click → Open, or run it from Terminal. Local builds are unsigned; that is expected for source-first installs.
+
+**Slow on first dictation**  
+→ Wait until the menu bar shows **Ready** (model still loading or downloading).
+
+### Optional: local `.app` / DMG
+
+`scripts/package-dmg.sh` can wrap a build into a `.app` / DMG for your own machine. It is **not** the supported install path and is not used for public releases, notarization, or auto-updates.
 
 ---
 
 ## For Developers
 
-The repo contains both the native Swift menu-bar app (`swift/`) and a Python CLI / daemon (`src/`) that can be used independently.
+**Primary product:** native Swift menu-bar app in `swift/` (ParakeetPTT).  
+**Optional:** Python CLI / daemon / fn-ptt in `src/` for scripting and experiments.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and PR guidance.
 
 ### Project Structure
 
 ```
 parakeet-stt/
-├── src/                    # Python CLI and daemon
+├── src/                    # Optional Python CLI and daemon
 │   ├── backends/           # Backend implementations (NeMo, MLX)
 │   ├── daemon/             # Background recording daemon (Unix socket IPC)
 │   ├── fn_ptt/             # Python fn-key push-to-talk
@@ -80,76 +107,24 @@ parakeet-stt/
 │   └── output.py           # Output formatting
 ├── swift/                  # Native macOS menu-bar app (ParakeetPTT)
 │   └── Sources/ParakeetPTT/
-│       ├── AppDelegate.swift
-│       ├── AudioRecorder.swift
-│       ├── FnKeyMonitor.swift
-│       ├── MenuBarView.swift
-│       ├── TranscriptionService.swift
-│       └── PasteService.swift
 ├── scripts/
-│   ├── build-swift.sh      # Build the Swift app (debug or release)
-│   └── package-dmg.sh      # Package into a distributable DMG
+│   ├── build-swift.sh      # Primary: build & run from source
+│   └── package-dmg.sh      # Optional: local .app/DMG only
 └── tests/                  # Python test suite
 ```
 
-### Quick Start
+### Python CLI (optional)
 
 ```bash
-source venv/bin/activate
-
-# Build Swift app
-./scripts/build-swift.sh          # debug
-./scripts/build-swift.sh release  # optimised
-
-# Package as DMG
-./scripts/package-dmg.sh
-
-# Run Python CLI
-parakeet-stt transcribe audio.wav
-parakeet-stt fn-ptt start
-```
-
-### Python Installation
-
-```bash
-git clone <repository-url>
-cd parakeet-stt
-
 python3 -m venv venv
 source venv/bin/activate
-
 pip install --upgrade pip
 pip install -r requirements.txt
+# Apple Silicon — also: pip install -r requirements-mlx.txt
 
-# Apple Silicon — also install MLX dependencies
-pip install -r requirements-mlx.txt
-```
-
-### Python CLI Usage
-
-```bash
-# Transcribe a file
 parakeet-stt transcribe audio.wav
-parakeet-stt transcribe audio.wav --output-dir results/
-parakeet-stt transcribe audio.wav --no-timestamps
-parakeet-stt transcribe audio.wav --device cpu
-
-# fn-key push-to-talk (Python daemon)
 parakeet-stt fn-ptt start
-parakeet-stt fn-ptt status
-parakeet-stt fn-ptt stop
-
-# Background recording daemon
-parakeet-stt daemon start
-parakeet-stt daemon status
-parakeet-stt daemon stop
-parakeet-stt record start
-parakeet-stt record stop
 ```
-
-### Backend Selection
-
-The Python CLI automatically picks the best available backend:
 
 | Platform | Backend | Hardware | Performance |
 |---|---|---|---|
@@ -158,60 +133,18 @@ The Python CLI automatically picks the best available backend:
 | Linux/Windows (NVIDIA) | NeMo | CUDA | 3–5x faster |
 | Other | NeMo | CPU | Baseline |
 
-### Building the Swift App
-
-```bash
-# Debug build
-./scripts/build-swift.sh
-
-# Release build
-./scripts/build-swift.sh release
-
-# Ad-hoc signed DMG (local use)
-./scripts/package-dmg.sh
-
-# Developer ID signed DMG (distribution-ready)
-CODESIGN_IDENTITY="Developer ID Application: Your Name (TEAMID)" ./scripts/package-dmg.sh
-```
-
-The build script prefers the swift.org toolchain (`swift-6.2.3-RELEASE`) over Xcode Command Line Tools to avoid a known `PackageDescription` ABI mismatch.
-
-### Testing
+### Testing & quality
 
 ```bash
 source venv/bin/activate
+pip install pytest pytest-cov pytest-mock black ruff
 
-pip install pytest pytest-cov pytest-mock
-
-pytest                        # all tests
-pytest -m "not slow"          # skip integration tests
-pytest --cov=src              # with coverage
-```
-
-### Code Quality
-
-```bash
-# Format
+pytest -m "not slow"
 black --line-length 100 src/ tests/
-
-# Lint
 ruff check --line-length 100 src/ tests/
-
-# Pre-commit hooks (one-time setup)
-pip install pre-commit
-pre-commit install
 ```
 
-### CI Pipeline
-
-GitHub Actions runs on every push and PR to `main`:
-
-| Job | What it does |
-|---|---|
-| `python-lint` | Black + Ruff |
-| `python-test` | Unit tests (skips slow/integration) |
-| `swift-build` | Swift debug build |
-| `dependency-audit` | `pip-audit` on requirements.txt |
+CI on `main`: Python lint, unit tests, Swift debug build, `pip-audit`.
 
 ---
 
@@ -221,8 +154,9 @@ GitHub Actions runs on every push and PR to `main`:
 - **Parameters:** 600 million
 - **Architecture:** FastConformer-TDT
 - **Word Error Rate:** 6.05% average
-- **License:** CC-BY-4.0
+- **Model license:** CC-BY-4.0 (weights / model card — separate from this repo’s code license)
 
 ## License
 
-This project follows the model's CC-BY-4.0 license.
+- **This repository’s source code** is released under the [MIT License](LICENSE) (Copyright © 2026 Devvor).
+- **NVIDIA Parakeet model weights** used at runtime remain under [CC-BY-4.0](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3).

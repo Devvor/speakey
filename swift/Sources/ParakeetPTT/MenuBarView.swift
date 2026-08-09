@@ -74,9 +74,15 @@ struct MenuBarView: View {
     private var permissionFixes: some View {
         Divider()
 
-        Text("Remove ParakeetPTT from each list, re-add it, then quit & reopen.")
+        Text("Accessibility is required for fn-key detection and paste. Microphone is required to record.")
             .font(.caption)
             .foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+
+        Text("If permissions look correct, remove ParakeetPTT from each list, re-add it, then quit & reopen.")
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
 
         Text(Bundle.main.bundlePath)
             .font(.caption2)
@@ -89,10 +95,6 @@ struct MenuBarView: View {
 
         Button("Open Microphone Settings") {
             SystemSettings.open(.microphone)
-        }
-
-        Button("Open Input Monitoring Settings") {
-            SystemSettings.open(.inputMonitoring)
         }
     }
 }
