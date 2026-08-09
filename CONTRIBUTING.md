@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping improve **Kuaishuo** (app target: **ParakeetPTT**).
+Thanks for helping improve **Kuaishuo**.
 
 This project is **source-first**: users (and AI agents) clone the repo and build with `./scripts/build-swift.sh`. There is no public DMG, notarization, or auto-updater to maintain.
 
@@ -22,7 +22,7 @@ Prefer changes that improve the Swift app’s daily UX, reliability, and **build
 ```bash
 ./scripts/build-swift.sh          # debug
 ./scripts/build-swift.sh release  # release
-./swift/.build/debug/parakeet-ptt
+./swift/.build/debug/kuaishuo
 ```
 
 Requires macOS 14+ and a recent Swift toolchain (see README). Grant **Accessibility** and **Microphone** when testing fn-key dictation. After rebuilding to a new path, re-add the binary in Accessibility settings if needed.
@@ -40,7 +40,7 @@ pytest -m "not slow"
 ## Pull requests
 
 1. Keep changes focused; avoid drive-by refactors.
-2. Match existing style (Swift: AppKit/SwiftUI patterns in `swift/Sources/ParakeetPTT/`; Python: Black/Ruff, 100 cols).
+2. Match existing style (Swift: AppKit/SwiftUI patterns in `swift/Sources/Kuaishuo/`; Python: Black/Ruff, 100 cols).
 3. Do not commit secrets, model weights, or large binaries.
 4. Update README when user-facing behavior, permissions, or the build path change.
 

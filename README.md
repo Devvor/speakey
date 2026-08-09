@@ -2,7 +2,7 @@
 
 Local speech-to-text for Mac — hold **fn**, speak, release, and your words appear wherever your cursor is. Runs entirely on-device using the Apple Neural Engine. No internet required, no subscriptions.
 
-**Distribution model:** source-first. There is no public DMG or App Store build. Clone the repo, build on your Mac (or point an AI coding agent at the repo and ask it to build), then run the binary. The menu-bar app target is named **ParakeetPTT**.
+**Distribution model:** source-first. There is no public DMG or App Store build. Clone the repo, build on your Mac (or point an AI coding agent at the repo and ask it to build), then run the **Kuaishuo** binary.
 
 This repository also includes an optional Python CLI under `src/`.
 
@@ -25,9 +25,9 @@ cd kuaishuo
 # ./scripts/build-swift.sh release  # optimised
 
 # Run the menu-bar app
-./swift/.build/debug/parakeet-ptt
+./swift/.build/debug/kuaishuo
 # or, after a release build:
-# ./swift/.build/release/parakeet-ptt
+# ./swift/.build/release/kuaishuo
 ```
 
 First launch downloads the CoreML model (~2.5GB) into the app cache. Later launches reuse it.
@@ -88,15 +88,15 @@ Click the microphone icon in the menu bar to:
 
 ## For Developers
 
-**Primary product:** native Swift menu-bar app in `swift/` (ParakeetPTT).  
-**Optional:** Python CLI / daemon / fn-ptt in `src/` for scripting and experiments.
+**Primary product:** native Swift menu-bar app in `swift/` (**Kuaishuo**).  
+**Optional:** Python CLI / daemon / fn-ptt in `src/` for scripting and experiments (`parakeet-stt` package name).
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and PR guidance.
 
 ### Project Structure
 
 ```
-parakeet-stt/
+kuaishuo/
 ├── src/                    # Optional Python CLI and daemon
 │   ├── backends/           # Backend implementations (NeMo, MLX)
 │   ├── daemon/             # Background recording daemon (Unix socket IPC)
@@ -105,8 +105,8 @@ parakeet-stt/
 │   ├── config.py           # Configuration management
 │   ├── model.py            # Model wrapper
 │   └── output.py           # Output formatting
-├── swift/                  # Native macOS menu-bar app (ParakeetPTT)
-│   └── Sources/ParakeetPTT/
+├── swift/                  # Native macOS menu-bar app (Kuaishuo)
+│   └── Sources/Kuaishuo/
 ├── scripts/
 │   ├── build-swift.sh      # Primary: build & run from source
 │   └── package-dmg.sh      # Optional: local .app/DMG only

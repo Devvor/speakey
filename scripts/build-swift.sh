@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# scripts/build-swift.sh — Build the parakeet-ptt Swift app
+# scripts/build-swift.sh — Build the Kuaishuo Swift app
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SWIFT_DIR="$(dirname "$SCRIPT_DIR")/swift"
 BUILD_MODE="${1:-debug}"
 
-echo "=== Parakeet PTT — Swift Builder ==="
+echo "=== Kuaishuo — Swift Builder ==="
 echo ""
 
 # Check prerequisites
@@ -42,11 +42,11 @@ cd "$SWIFT_DIR"
 if [ "$BUILD_MODE" = "release" ]; then
     echo "Building in release mode..."
     swift build -c release 2>&1
-    BINARY="$SWIFT_DIR/.build/release/parakeet-ptt"
+    BINARY="$SWIFT_DIR/.build/release/kuaishuo"
 else
     echo "Building in debug mode..."
     swift build 2>&1
-    BINARY="$SWIFT_DIR/.build/debug/parakeet-ptt"
+    BINARY="$SWIFT_DIR/.build/debug/kuaishuo"
 fi
 
 if [ -f "$BINARY" ]; then

@@ -2,7 +2,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "ParakeetPTT",
+    name: "Kuaishuo",
     platforms: [.macOS(.v14)],
     dependencies: [
         .package(
@@ -12,11 +12,11 @@ let package = Package(
     ],
     targets: [
         .executableTarget(
-            name: "parakeet-ptt",
+            name: "kuaishuo",
             dependencies: [
                 .product(name: "FluidAudio", package: "FluidAudio"),
             ],
-            path: "Sources/ParakeetPTT",
+            path: "Sources/Kuaishuo",
             exclude: ["Info.plist"],
             linkerSettings: [
                 .linkedFramework("AVFoundation"),

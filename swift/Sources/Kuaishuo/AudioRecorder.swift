@@ -22,7 +22,7 @@ final class AudioRecorder {
 
         let inputNode = engine.inputNode
         let nativeFormat = inputNode.outputFormat(forBus: 0)
-        print("[PTT] Mic native format: \(nativeFormat)")
+        print("[Kuaishuo] Mic native format: \(nativeFormat)")
 
         // Create converter from native mic format to 16kHz mono Float32
         guard let converter = AVAudioConverter(from: nativeFormat, to: targetFormat) else {
@@ -41,7 +41,7 @@ final class AudioRecorder {
         engine.prepare()
         try engine.start()
         isRecording = true
-        print("[PTT] Recording started")
+        print("[Kuaishuo] Recording started")
     }
 
     func stopRecording() -> [Float] {
@@ -85,7 +85,7 @@ final class AudioRecorder {
         }
 
         if let error {
-            print("[PTT] Conversion error: \(error)")
+            print("[Kuaishuo] Conversion error: \(error)")
             return
         }
 

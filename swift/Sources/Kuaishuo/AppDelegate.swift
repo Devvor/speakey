@@ -13,9 +13,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var overlayPanel: OverlayPanel?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        PTTLog.write("App launched from \(Bundle.main.bundlePath)")
+        KuaishuoLog.write("App launched from \(Bundle.main.bundlePath)")
         promptForAccessibilityIfNeeded()
-        PTTLog.write("AX trusted: \(AXIsProcessTrusted())")
+        KuaishuoLog.write("AX trusted: \(AXIsProcessTrusted())")
         requestMicPermission()
         requestNotificationPermission()
         setupOverlay()
@@ -32,14 +32,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func requestMicPermission() {
         switch AVCaptureDevice.authorizationStatus(for: .audio) {
         case .authorized:
-            print("[PTT] Microphone permission: authorized")
+            print("[Kuaishuo] Microphone permission: authorized")
         case .notDetermined:
-            print("[PTT] Requesting microphone permission...")
+            print("[Kuaishuo] Requesting microphone permission...")
             AVCaptureDevice.requestAccess(for: .audio) { granted in
-                print("[PTT] Microphone permission \(granted ? "granted" : "denied")")
+                print("[Kuaishuo] Microphone permission \(granted ? "granted" : "denied")")
             }
         case .denied, .restricted:
-            print("[PTT] Microphone permission denied — check System Settings > Privacy > Microphone")
+            print("[Kuaishuo] Microphone permission denied — check System Settings > Privacy > Microphone")
             appState.status = .error("Grant Microphone permission in System Settings")
         @unknown default:
             break
@@ -48,14 +48,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func requestNotificationPermission() {
         guard Bundle.main.bundleIdentifier != nil else {
-            print("[PTT] Skipping notification permission — no app bundle")
+            print("[Kuaishuo] Skipping notification permission — no app bundle")
             return
         }
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { granted, error in
             if let error {
-                print("[PTT] Notification permission error: \(error.localizedDescription)")
+                print("[Kuaishuo] Notification permission error: \(error.localizedDescription)")
             } else {
-                print("[PTT] Notification permission \(granted ? "granted" : "denied")")
+                print("[Kuaishuo] Notification permission \(granted ? "granted" : "denied")")
             }
         }
     }
@@ -86,7 +86,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if !fnKeyMonitor.start() {
             let path = Bundle.main.bundlePath
             appState.status = .error("Quit & reopen after granting permissions")
-            PTTLog.write("Event tap failed — path: \(path)")
+            KuaishuoLog.write("Event tap failed — path: \(path)")
         }
     }
 
@@ -98,18 +98,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
                 if needsDownload {
                     appState.status = .downloading
-                    print("[PTT] Models not cached, downloading...")
+                    print("[Kuaishuo] Models not cached, downloading...")
                     try await AsrModels.download(version: .v3)
-                    print("[PTT] Download complete")
+                    print("[Kuaishuo] Download complete")
                 }
 
                 appState.status = .loadingModel
-                print("[PTT] Loading model into memory...")
+                print("[Kuaishuo] Loading model into memory...")
                 try await transcriptionService.loadFromCache()
-                print("[PTT] Model loaded successfully")
+                print("[Kuaishuo] Model loaded successfully")
 
                 appState.status = .ready
-                PTTLog.write("Model ready")
+                KuaishuoLog.write("Model ready")
 
                 if needsDownload {
                     sendReadyNotification()
@@ -123,7 +123,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func sendReadyNotification() {
         guard Bundle.main.bundleIdentifier != nil else { return }
         let content = UNMutableNotificationContent()
-        content.title = "Parakeet PTT"
+        content.title = "Kuaishuo"
         content.body = "Model ready — hold fn to dictate, or fn+Space for hands-free"
         content.sound = .default
 
@@ -134,7 +134,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         )
         UNUserNotificationCenter.current().add(request) { error in
             if let error {
-                print("[PTT] Failed to send notification: \(error.localizedDescription)")
+                print("[Kuaishuo] Failed to send notification: \(error.localizedDescription)")
             }
         }
     }
@@ -176,7 +176,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
             let samples = audioRecorder.stopRecording()
             let duration = Double(samples.count) / 16000.0
-            print("[PTT] Captured \(samples.count) samples (\(String(format: "%.1f", duration))s of audio)")
+            print("[Kuaishuo] Captured \(samples.count) samples (\(String(format: "%.1f", duration))s of audio)")
 
             let rms: Float
             if samples.isEmpty {
@@ -184,32 +184,32 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             } else {
                 let maxAmp = samples.map { abs($0) }.max() ?? 0
                 rms = sqrt(samples.map { $0 * $0 }.reduce(0, +) / Float(samples.count))
-                print("[PTT] Audio levels — max: \(maxAmp), RMS: \(rms)")
+                print("[Kuaishuo] Audio levels — max: \(maxAmp), RMS: \(rms)")
             }
 
             // Too short or near-silent — skip inference and explain briefly.
             let minDuration = 0.25
             let minRMS: Float = 0.004
             if samples.isEmpty || duration < minDuration || rms < minRMS {
-                print("[PTT] Skipping transcription — empty/short/silent audio")
+                print("[Kuaishuo] Skipping transcription — empty/short/silent audio")
                 await showTransientNotice("No speech detected")
                 return
             }
 
             do {
                 let text = try await transcriptionService.transcribe(samples)
-                print("[PTT] Transcription complete (\(text.count) chars)")
+                print("[Kuaishuo] Transcription complete (\(text.count) chars)")
                 if !text.isEmpty {
                     PasteService.paste(text)
                     appState.lastTranscription = text
                     appState.status = .ready
                     hideOverlay()
                 } else {
-                    print("[PTT] Transcription returned empty text")
+                    print("[Kuaishuo] Transcription returned empty text")
                     await showTransientNotice("No speech detected")
                 }
             } catch {
-                print("[PTT] Transcription error: \(error)")
+                print("[Kuaishuo] Transcription error: \(error)")
                 await showTransientNotice("Transcription failed", recoverToReady: true)
             }
         }
@@ -232,7 +232,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         appState.isHandsFree = false
         appState.status = .ready
         hideOverlay()
-        PTTLog.write("Recording cancelled — discarded")
+        KuaishuoLog.write("Recording cancelled — discarded")
     }
 
     // MARK: - Overlay

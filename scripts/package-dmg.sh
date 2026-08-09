@@ -8,13 +8,13 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 SWIFT_DIR="$PROJECT_DIR/swift"
 BUILD_DIR="$PROJECT_DIR/build"
-APP_NAME="ParakeetPTT"
+APP_NAME="Kuaishuo"
 APP_BUNDLE="$BUILD_DIR/$APP_NAME.app"
 DMG_NAME="$APP_NAME.dmg"
 DMG_PATH="$PROJECT_DIR/$DMG_NAME"
 VERSION="1.0.0"
 
-echo "=== Parakeet PTT — DMG Packager ==="
+echo "=== Kuaishuo — DMG Packager ==="
 echo ""
 
 # Prefer swift.org toolchain over CLT to avoid PackageDescription ABI mismatch
@@ -31,9 +31,9 @@ cd "$SWIFT_DIR"
 swift build -c "$BUILD_MODE" 2>&1
 
 if [ "$BUILD_MODE" = "release" ]; then
-    BINARY="$SWIFT_DIR/.build/release/parakeet-ptt"
+    BINARY="$SWIFT_DIR/.build/release/kuaishuo"
 else
-    BINARY="$SWIFT_DIR/.build/debug/parakeet-ptt"
+    BINARY="$SWIFT_DIR/.build/debug/kuaishuo"
 fi
 if [ ! -f "$BINARY" ]; then
     echo "Error: Binary not found at $BINARY"
@@ -47,7 +47,7 @@ rm -rf "$APP_BUNDLE"
 mkdir -p "$APP_BUNDLE/Contents/MacOS"
 
 # Copy binary
-cp "$BINARY" "$APP_BUNDLE/Contents/MacOS/parakeet-ptt"
+cp "$BINARY" "$APP_BUNDLE/Contents/MacOS/kuaishuo"
 
 # Write Info.plist
 cat > "$APP_BUNDLE/Contents/Info.plist" << 'PLIST'
@@ -56,13 +56,13 @@ cat > "$APP_BUNDLE/Contents/Info.plist" << 'PLIST'
 <plist version="1.0">
 <dict>
     <key>CFBundleName</key>
-    <string>Parakeet PTT</string>
+    <string>Kuaishuo</string>
     <key>CFBundleDisplayName</key>
-    <string>Parakeet PTT</string>
+    <string>Kuaishuo</string>
     <key>CFBundleIdentifier</key>
-    <string>com.parakeet.ptt</string>
+    <string>com.devvor.kuaishuo</string>
     <key>CFBundleExecutable</key>
-    <string>parakeet-ptt</string>
+    <string>kuaishuo</string>
     <key>CFBundleVersion</key>
     <string>1.0.0</string>
     <key>CFBundleShortVersionString</key>
@@ -74,7 +74,7 @@ cat > "$APP_BUNDLE/Contents/Info.plist" << 'PLIST'
     <key>LSMinimumSystemVersion</key>
     <string>14.0</string>
     <key>NSMicrophoneUsageDescription</key>
-    <string>Parakeet PTT needs microphone access to record speech for transcription.</string>
+    <string>Kuaishuo needs microphone access to record speech for transcription.</string>
     <key>NSHighResolutionCapable</key>
     <true/>
 </dict>
@@ -93,7 +93,7 @@ else
 fi
 codesign --force --sign "$SIGNING_IDENTITY" \
     --entitlements /dev/stdin \
-    "$APP_BUNDLE/Contents/MacOS/parakeet-ptt" << 'ENTITLEMENTS'
+    "$APP_BUNDLE/Contents/MacOS/kuaishuo" << 'ENTITLEMENTS'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -147,6 +147,6 @@ echo "Preferred install: ./scripts/build-swift.sh && run the printed binary path
 echo ""
 echo "If you use this DMG on your machine:"
 echo "  1. Open $DMG_NAME"
-echo "  2. Drag Parakeet PTT to Applications"
+echo "  2. Drag Kuaishuo to Applications"
 echo "  3. Right-click > Open if macOS blocks the unsigned app"
 echo "  4. Grant Microphone + Accessibility permissions when prompted"

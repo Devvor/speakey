@@ -1,14 +1,14 @@
 import SwiftUI
 
 @main
-struct ParakeetApp: App {
+struct KuaishuoApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     var body: some Scene {
         MenuBarExtra {
             MenuBarView(appState: appDelegate.appState)
         } label: {
-            Label("Parakeet PTT", systemImage: appDelegate.appState.statusIcon)
+            Label("Kuaishuo", systemImage: appDelegate.appState.statusIcon)
                 .symbolEffect(.pulse, isActive: appDelegate.appState.isDownloading)
         }
         .menuBarExtraStyle(.window)

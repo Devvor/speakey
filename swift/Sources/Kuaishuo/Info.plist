@@ -3,10 +3,10 @@
 <plist version="1.0">
 <dict>
     <key>NSMicrophoneUsageDescription</key>
-    <string>Parakeet PTT needs microphone access to record speech for transcription.</string>
+    <string>Kuaishuo needs microphone access to record speech for transcription.</string>
     <key>CFBundleName</key>
-    <string>Parakeet PTT</string>
+    <string>Kuaishuo</string>
     <key>CFBundleIdentifier</key>
-    <string>com.parakeet.ptt</string>
+    <string>com.devvor.kuaishuo</string>
 </dict>
 </plist>
