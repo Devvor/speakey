@@ -72,5 +72,4 @@ docs/archive/            # Historical plans (do not treat as current)
 
 - User install: [README.md](README.md)
 - Contributing: [CONTRIBUTING.md](CONTRIBUTING.md)
-- Security: [SECURITY.md](SECURITY.md)
 - Phase history / deep notes: [docs/knowledge/](docs/knowledge/), [docs/archive/](docs/archive/)

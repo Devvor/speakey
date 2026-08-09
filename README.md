@@ -160,6 +160,6 @@ CI on `main`: Python lint, unit tests, Swift debug build, `pip-audit`.
 
 ## License
 
-- **This repository’s source code** is released under the [MIT License](LICENSE) (Copyright © 2026 Devvor).
+- **This repository’s source code** is released under the [MIT License](LICENSE) (Copyright © 2026 the Speakey authors).
 - **NVIDIA Parakeet model weights** used at runtime remain under [CC-BY-4.0](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3).
 - Third-party attribution: [NOTICE](NOTICE) (FluidAudio Apache-2.0, Parakeet CC-BY-4.0).
