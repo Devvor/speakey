@@ -1,7 +1,8 @@
 """Integration tests with real model (slow)."""
 
-import pytest
 from pathlib import Path
+
+import pytest
 
 
 @pytest.mark.slow

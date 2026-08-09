@@ -1,10 +1,9 @@
 """Model wrapper for Parakeet TDT ASR."""
 
 from pathlib import Path
-from typing import Dict, Union
 
-from .config import Config
 from .backends.factory import BackendFactory
+from .config import Config
 
 
 class ModelWrapper:
@@ -19,7 +18,7 @@ class ModelWrapper:
         self.config = config
         self.backend = BackendFactory.create_backend(config)
 
-    def transcribe(self, audio_path: Union[str, Path], timestamps: bool = True) -> Dict:
+    def transcribe(self, audio_path: str | Path, timestamps: bool = True) -> dict:
         """Transcribe audio file.
 
         Args:

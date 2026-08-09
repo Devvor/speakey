@@ -1,8 +1,8 @@
 """Recording controller for daemon mode."""
 
 import tempfile
+from collections.abc import Callable
 from pathlib import Path
-from typing import Optional, Callable
 
 from ..config import Config
 from ..model import ModelWrapper
@@ -23,12 +23,12 @@ class DaemonRecordingController:
         self.state = "idle"
 
         # Components (lazy initialization)
-        self.recorder: Optional[AudioRecorder] = None
-        self.model: Optional[ModelWrapper] = None
+        self.recorder: AudioRecorder | None = None
+        self.model: ModelWrapper | None = None
 
         # Callbacks
-        self.on_state_change: Optional[Callable[[str], None]] = None
-        self.on_transcription_complete: Optional[Callable[[str], None]] = None
+        self.on_state_change: Callable[[str], None] | None = None
+        self.on_transcription_complete: Callable[[str], None] | None = None
 
     def _ensure_recorder(self) -> None:
         """Ensure recorder is initialized."""

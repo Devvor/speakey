@@ -37,7 +37,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install test dependencies
-        run: pip install pytest pytest-cov pytest-mock click colorama
+        run: pip install pytest pytest-cov pytest-mock click colorama "numpy>=1.24,<2.4"
 
       - name: Run unit tests (skip slow/integration)
         run: pytest -m "not slow" --no-header -q
@@ -64,5 +64,8 @@ jobs:
       - name: Install pip-audit
         run: pip install pip-audit
 
-      - name: Audit Python dependencies
-        run: pip-audit -r requirements.txt
+      - name: Audit core Python dependencies
+        # Core CLI deps from pyproject.toml — not the optional NeMo stack in requirements.txt.
+        run: |
+          printf '%s\n' 'click>=8.1.0' 'colorama>=0.4.6' > /tmp/requirements-core.txt
+          pip-audit -r /tmp/requirements-core.txt

@@ -9,7 +9,7 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 # Now we can import the app
-from src.daemon.app import main  # noqa: E402
+from src.daemon.app import main
 
 if __name__ == "__main__":
     main()

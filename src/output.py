@@ -1,14 +1,13 @@
 """Output handling for transcription results."""
 
 from pathlib import Path
-from typing import Dict
 
 
 class OutputHandler:
     """Handle transcription output formatting and saving."""
 
     @staticmethod
-    def format_transcription(transcription: Dict, include_timestamps: bool = True) -> str:
+    def format_transcription(transcription: dict, include_timestamps: bool = True) -> str:
         """Format transcription for output.
 
         Args:
@@ -47,7 +46,7 @@ class OutputHandler:
 
     def save_transcription(
         self,
-        transcription: Dict,
+        transcription: dict,
         output_path: Path,
         include_timestamps: bool = True,
     ) -> None:

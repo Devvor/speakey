@@ -9,8 +9,8 @@ import wave
 from pathlib import Path
 
 import numpy as np
-import sounddevice as sd
 import Quartz
+import sounddevice as sd
 
 from ..config import Config
 from ..model import ModelWrapper

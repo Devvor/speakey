@@ -1,8 +1,9 @@
 """Tests for daemon recording controller."""
 
-import pytest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
+
 import numpy as np
+import pytest
 
 from src.config import Config
 from src.daemon.controller import DaemonRecordingController
@@ -16,17 +17,25 @@ def config():
 
 @pytest.fixture
 def controller(config):
-    """Test controller."""
-    with patch("src.daemon.controller.ModelWrapper"):
-        with patch("src.daemon.controller.AudioRecorder"):
-            return DaemonRecordingController(config)
+    """Test controller with mocked recorder/model dependencies."""
+    mock_recorder = MagicMock()
+    mock_model = MagicMock()
+
+    with (
+        patch("src.daemon.controller.ModelWrapper", return_value=mock_model),
+        patch("src.daemon.controller.AudioRecorder", return_value=mock_recorder),
+    ):
+        ctrl = DaemonRecordingController(config)
+        ctrl._mock_recorder = mock_recorder
+        ctrl._mock_model = mock_model
+        yield ctrl
 
 
 def test_controller_initialization(controller):
-    """Test controller initialization."""
+    """Test controller initialization (recorder/model are lazy)."""
     assert controller.state == "idle"
-    assert controller.recorder is not None
-    assert controller.model is not None
+    assert controller.recorder is None
+    assert controller.model is None
 
 
 def test_start_recording_from_idle(controller):
@@ -51,10 +60,9 @@ def test_start_recording_invalid_state(controller):
 
 def test_stop_recording_success(controller):
     """Test stopping recording successfully."""
-    # Setup
-    controller.state = "recording"
-    controller.recorder.stop.return_value = np.array([[0.1], [0.2], [0.3]])
-    controller.model.transcribe.return_value = {"text": "test transcription"}
+    controller.start_recording()
+    controller._mock_recorder.stop.return_value = np.array([[0.1], [0.2], [0.3]])
+    controller._mock_model.transcribe.return_value = {"text": "test transcription"}
 
     response = controller.stop_recording()
 
@@ -65,8 +73,8 @@ def test_stop_recording_success(controller):
 
 def test_stop_recording_no_audio(controller):
     """Test stopping recording with no audio."""
-    controller.state = "recording"
-    controller.recorder.stop.return_value = np.array([])
+    controller.start_recording()
+    controller._mock_recorder.stop.return_value = np.array([])
 
     response = controller.stop_recording()
 
@@ -77,14 +85,12 @@ def test_stop_recording_no_audio(controller):
 
 def test_toggle_recording(controller):
     """Test toggling recording."""
-    # Toggle from idle (start)
     response = controller.toggle_recording()
     assert response["status"] == "ok"
     assert controller.state == "recording"
 
-    # Toggle from recording (stop)
-    controller.recorder.stop.return_value = np.array([[0.1], [0.2]])
-    controller.model.transcribe.return_value = {"text": "test"}
+    controller._mock_recorder.stop.return_value = np.array([[0.1], [0.2]])
+    controller._mock_model.transcribe.return_value = {"text": "test"}
 
     response = controller.toggle_recording()
     assert response["status"] == "ok"

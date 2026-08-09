@@ -2,8 +2,9 @@
 
 import sys
 from pathlib import Path
+
 import click
-from colorama import init, Fore, Style
+from colorama import Fore, Style, init
 
 from .config import Config
 from .model import ModelWrapper
@@ -17,7 +18,6 @@ init(autoreset=True)
 @click.version_option(version="0.1.0")
 def main():
     """Parakeet STT - Minimal speech-to-text CLI."""
-    pass
 
 
 @main.command()
@@ -104,7 +104,6 @@ def transcribe(
 @main.group()
 def daemon():
     """Manage background daemon service."""
-    pass
 
 
 @daemon.command("start")
@@ -167,7 +166,6 @@ def daemon_status():
 @main.group("fn-ptt")
 def fn_ptt():
     """fn-key push-to-talk: hold fn to record, release to paste."""
-    pass
 
 
 @fn_ptt.command("start")
@@ -225,8 +223,8 @@ def record(action: str):
         parakeet-stt record start   # Start recording
         parakeet-stt record stop    # Stop recording
     """
-    from .daemon.manager import DaemonManager
     from .daemon.ipc import IPCClient
+    from .daemon.manager import DaemonManager
 
     manager = DaemonManager()
 

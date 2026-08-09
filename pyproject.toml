@@ -68,6 +68,11 @@ target-version = ['py310']
 line-length = 100
 target-version = "py310"
 
+[tool.ruff.lint]
+# BLE001: optional backends/CLI use broad Exception as error boundaries.
+# SIM115: subprocess log file handles must outlive Popen.
+ignore = ["BLE001", "SIM115"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]

@@ -2,11 +2,11 @@
 
 import os
 from pathlib import Path
-from typing import Dict, Union
+
 import nemo.collections.asr as nemo_asr
 
-from .base import BaseBackend
 from ..config import Config
+from .base import BaseBackend
 
 
 class NeMoBackend(BaseBackend):
@@ -31,7 +31,7 @@ class NeMoBackend(BaseBackend):
         """Load NeMo ASR model."""
         return nemo_asr.models.ASRModel.from_pretrained(model_name=self.config.model_name)
 
-    def transcribe(self, audio_path: Union[str, Path], timestamps: bool = True) -> Dict:
+    def transcribe(self, audio_path: str | Path, timestamps: bool = True) -> dict:
         """Transcribe audio using NeMo."""
         audio_path = str(audio_path)
         output = self.model.transcribe([audio_path], timestamps=timestamps)

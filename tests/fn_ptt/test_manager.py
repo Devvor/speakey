@@ -1,6 +1,8 @@
 import os
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 import pytest
+
 from src.fn_ptt.manager import FnPttManager
 
 

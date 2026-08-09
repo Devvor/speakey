@@ -1,14 +1,14 @@
 """Main daemon application."""
 
 import os
-import sys
 import signal
+import sys
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any
 
 from ..config import Config
-from .ipc import IPCServer
 from .controller import DaemonRecordingController
+from .ipc import IPCServer
 
 
 class DaemonApp:
@@ -83,7 +83,7 @@ class DaemonApp:
         self.stop()
         sys.exit(0)
 
-    def _handle_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
+    def _handle_message(self, message: dict[str, Any]) -> dict[str, Any]:
         """Handle IPC message.
 
         Args:

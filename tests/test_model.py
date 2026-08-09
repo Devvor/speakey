@@ -5,8 +5,8 @@ from unittest.mock import Mock, patch
 
 def test_model_wrapper_initialization():
     """Test model wrapper initializes correctly."""
-    from src.model import ModelWrapper
     from src.config import Config
+    from src.model import ModelWrapper
 
     config = Config(device="cpu")
 

@@ -1,7 +1,8 @@
 """Tests for MLX backend with real model."""
 
-import pytest
 from pathlib import Path
+
+import pytest
 
 
 def test_mlx_backend_transcription():

@@ -1,17 +1,16 @@
 """Daemon process management."""
 
 import os
-import sys
 import signal
 import subprocess
+import sys
 from pathlib import Path
-from typing import Optional
 
 
 class DaemonManager:
     """Manages daemon lifecycle."""
 
-    def __init__(self, runtime_dir: Optional[Path] = None):
+    def __init__(self, runtime_dir: Path | None = None):
         """Initialize daemon manager.
 
         Args:
@@ -48,7 +47,7 @@ class DaemonManager:
             self.pid_file.unlink()
             return False
 
-    def get_pid(self) -> Optional[int]:
+    def get_pid(self) -> int | None:
         """Get daemon PID.
 
         Returns:

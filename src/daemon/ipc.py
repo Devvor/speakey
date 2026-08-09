@@ -1,11 +1,11 @@
 """Inter-process communication for daemon."""
 
-import socket
 import json
 import os
-from pathlib import Path
-from typing import Optional, Dict, Any
+import socket
 import threading
+from pathlib import Path
+from typing import Any
 
 
 class IPCServer:
@@ -18,10 +18,10 @@ class IPCServer:
             socket_path: Path to Unix socket file
         """
         self.socket_path = socket_path
-        self.server: Optional[socket.socket] = None
+        self.server: socket.socket | None = None
         self.running = False
-        self.on_message: Optional[callable] = None
-        self.thread: Optional[threading.Thread] = None
+        self.on_message: callable | None = None
+        self.thread: threading.Thread | None = None
 
     def start(self) -> None:
         """Start the IPC server."""
@@ -55,7 +55,7 @@ class IPCServer:
                 self.server.settimeout(1.0)
                 conn, _ = self.server.accept()
                 threading.Thread(target=self._handle_connection, args=(conn,), daemon=True).start()
-            except socket.timeout:
+            except TimeoutError:
                 continue
             except Exception as e:
                 if self.running:
@@ -119,7 +119,7 @@ class IPCClient:
         """
         self.socket_path = socket_path
 
-    def send_command(self, command: str, **kwargs) -> Dict[str, Any]:
+    def send_command(self, command: str, **kwargs) -> dict[str, Any]:
         """Send command to daemon.
 
         Args:

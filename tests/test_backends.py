@@ -1,7 +1,8 @@
 """Tests for backend abstraction."""
 
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
 
 
 def test_base_backend_interface():
@@ -22,6 +23,8 @@ def test_base_backend_interface():
 
 def test_nemo_backend_initialization():
     """Test NeMo backend initialization."""
+    pytest.importorskip("nemo", reason="NeMo not installed")
+
     from src.backends.nemo_backend import NeMoBackend
     from src.config import Config
 

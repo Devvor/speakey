@@ -10,12 +10,14 @@ def test_backend_factory_selects_mlx_on_mac():
 
     config = Config()
 
-    with patch("src.backends.factory.platform.system", return_value="Darwin"):
-        with patch("src.backends.factory.platform.processor", return_value="arm"):
-            with patch("src.backends.factory.MLX_AVAILABLE", True):
-                backend_class = BackendFactory.get_backend_class(config)
+    with (
+        patch("src.backends.factory.platform.system", return_value="Darwin"),
+        patch("src.backends.factory.platform.processor", return_value="arm"),
+        patch("src.backends.factory.MLX_AVAILABLE", True),
+    ):
+        backend_class = BackendFactory.get_backend_class(config)
 
-                assert backend_class.__name__ == "MLXBackend"
+        assert backend_class.__name__ == "MLXBackend"
 
 
 def test_backend_factory_selects_nemo_on_linux():
@@ -25,7 +27,12 @@ def test_backend_factory_selects_nemo_on_linux():
 
     config = Config()
 
-    with patch("src.backends.factory.platform.system", return_value="Linux"):
+    with (
+        patch("src.backends.factory.platform.system", return_value="Linux"),
+        patch("src.backends.factory.NEMO_AVAILABLE", True),
+        patch("src.backends.factory.NeMoBackend", create=True) as mock_nemo,
+    ):
+        mock_nemo.__name__ = "NeMoBackend"
         backend_class = BackendFactory.get_backend_class(config)
 
         assert backend_class.__name__ == "NeMoBackend"
@@ -38,7 +45,12 @@ def test_backend_factory_fallback_to_nemo():
 
     config = Config()
 
-    with patch("src.backends.factory.MLX_AVAILABLE", False):
+    with (
+        patch("src.backends.factory.MLX_AVAILABLE", False),
+        patch("src.backends.factory.NEMO_AVAILABLE", True),
+        patch("src.backends.factory.NeMoBackend", create=True) as mock_nemo,
+    ):
+        mock_nemo.__name__ = "NeMoBackend"
         backend_class = BackendFactory.get_backend_class(config)
 
         assert backend_class.__name__ == "NeMoBackend"

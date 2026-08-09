@@ -1,6 +1,7 @@
 """Tests for push-to-talk configuration."""
 
 from unittest.mock import patch
+
 from src.config import Config, PTTConfig
 
 

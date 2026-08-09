@@ -2,7 +2,6 @@
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Dict, Union
 
 
 class BaseBackend(ABC):
@@ -15,10 +14,9 @@ class BaseBackend(ABC):
         Returns:
             Loaded model instance
         """
-        pass
 
     @abstractmethod
-    def transcribe(self, audio_path: Union[str, Path], timestamps: bool = True) -> Dict:
+    def transcribe(self, audio_path: str | Path, timestamps: bool = True) -> dict:
         """Transcribe audio file.
 
         Args:
@@ -30,4 +28,3 @@ class BaseBackend(ABC):
                 - text: Transcribed text
                 - timestamps: Optional timestamp data
         """
-        pass

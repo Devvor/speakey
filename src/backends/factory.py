@@ -1,10 +1,9 @@
 """Backend factory for automatic backend selection."""
 
 import platform
-from typing import Type
 
-from .base import BaseBackend
 from ..config import Config
+from .base import BaseBackend
 
 # Check NeMo availability
 try:
@@ -30,7 +29,7 @@ class BackendFactory:
     """Factory for creating appropriate backend based on platform."""
 
     @staticmethod
-    def get_backend_class(config: Config) -> Type[BaseBackend]:
+    def get_backend_class(config: Config) -> type[BaseBackend]:
         """Select appropriate backend based on platform and configuration.
 
         Args:

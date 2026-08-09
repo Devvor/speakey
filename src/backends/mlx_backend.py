@@ -1,10 +1,9 @@
 """MLX backend implementation for Apple Silicon."""
 
 from pathlib import Path
-from typing import Dict, Union
 
-from .base import BaseBackend
 from ..config import Config
+from .base import BaseBackend
 
 
 class MLXBackend(BaseBackend):
@@ -45,8 +44,8 @@ class MLXBackend(BaseBackend):
             RuntimeError: If parakeet-mlx package is not available
         """
         try:
+            from mlx import nn
             from parakeet_mlx import from_pretrained
-            import mlx.nn as nn
 
             # Load the model
             model = from_pretrained("mlx-community/parakeet-tdt-0.6b-v2")
@@ -64,7 +63,7 @@ class MLXBackend(BaseBackend):
                 f"Then: pip install git+https://github.com/EliFuzz/parakeet-mlx.git"
             )
 
-    def transcribe(self, audio_path: Union[str, Path], timestamps: bool = True) -> Dict:
+    def transcribe(self, audio_path: str | Path, timestamps: bool = True) -> dict:
         """Transcribe audio using MLX (with ANE if quantized).
 
         Args:

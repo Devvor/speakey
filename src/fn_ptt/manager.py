@@ -28,9 +28,8 @@ class FnPttManager:
     def start(self) -> bool:
         if self.is_running():
             return False
-        import src.fn_ptt.run as _run_module
-
-        run_script = Path(_run_module.__file__)
+        # Resolve script path without importing app deps (Quartz/sounddevice).
+        run_script = Path(__file__).resolve().parent / "run.py"
         log = open(self.runtime_dir / "fn-ptt.log", "a")
         proc = subprocess.Popen(
             [sys.executable, str(run_script), str(self.runtime_dir)],

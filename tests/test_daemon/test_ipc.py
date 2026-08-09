@@ -1,10 +1,11 @@
 """Tests for IPC communication."""
 
-import pytest
 import tempfile
 from pathlib import Path
 
-from src.daemon.ipc import IPCServer, IPCClient
+import pytest
+
+from src.daemon.ipc import IPCClient, IPCServer
 
 
 @pytest.fixture
@@ -63,12 +64,12 @@ def test_ipc_client_server_communication(short_socket_path):
 
     time.sleep(0.1)
 
-    # Send message
+    # Send a valid command (unknown commands are rejected by the server)
     client = IPCClient(socket_path)
-    response = client.send_command("test", data="hello")
+    response = client.send_command("ping", data="hello")
 
     assert response["status"] == "ok"
-    assert response["echo"]["command"] == "test"
+    assert response["echo"]["command"] == "ping"
     assert response["echo"]["data"] == "hello"
 
     # Clean up
