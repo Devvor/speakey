@@ -1,8 +1,8 @@
-# Kuaishuo
+# Speakey
 
 Local speech-to-text for Mac — hold **fn**, speak, release, and your words appear wherever your cursor is. Runs entirely on-device using the Apple Neural Engine. No internet required, no subscriptions.
 
-**Distribution model:** source-first. There is no public DMG or App Store build. Clone the repo, build on your Mac (or point an AI coding agent at the repo and ask it to build), then run the **Kuaishuo** binary.
+**Distribution model:** source-first. There is no public DMG or App Store build. Clone the repo, build on your Mac (or point an AI coding agent at the repo and ask it to build), then run the **Speakey** binary.
 
 This repository also includes an optional Python CLI under `src/`.
 
@@ -18,16 +18,16 @@ This repository also includes an optional Python CLI under `src/`.
 ### Build & run
 
 ```bash
-git clone https://github.com/Devvor/kuaishuo.git
-cd kuaishuo
+git clone https://github.com/Devvor/speakey.git
+cd speakey
 
 ./scripts/build-swift.sh          # debug (default)
 # ./scripts/build-swift.sh release  # optimised
 
 # Run the menu-bar app
-./swift/.build/debug/kuaishuo
+./swift/.build/debug/speakey
 # or, after a release build:
-# ./swift/.build/release/kuaishuo
+# ./swift/.build/release/speakey
 ```
 
 First launch downloads the CoreML model (~2.5GB) into the app cache. Later launches reuse it.
@@ -88,7 +88,7 @@ Click the microphone icon in the menu bar to:
 
 ## For Developers
 
-**Primary product:** native Swift menu-bar app in `swift/` (**Kuaishuo**).  
+**Primary product:** native Swift menu-bar app in `swift/` (**Speakey**).  
 **Optional:** Python CLI / daemon / fn-ptt in `src/` for scripting and experiments (`parakeet-stt` package name).
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and PR guidance.
@@ -96,7 +96,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and PR guidance.
 ### Project Structure
 
 ```
-kuaishuo/
+speakey/
 ├── src/                    # Optional Python CLI and daemon
 │   ├── backends/           # Backend implementations (NeMo, MLX)
 │   ├── daemon/             # Background recording daemon (Unix socket IPC)
@@ -105,8 +105,8 @@ kuaishuo/
 │   ├── config.py           # Configuration management
 │   ├── model.py            # Model wrapper
 │   └── output.py           # Output formatting
-├── swift/                  # Native macOS menu-bar app (Kuaishuo)
-│   └── Sources/Kuaishuo/
+├── swift/                  # Native macOS menu-bar app (Speakey)
+│   └── Sources/Speakey/
 ├── scripts/
 │   ├── build-swift.sh      # Primary: build & run from source
 │   └── package-dmg.sh      # Optional: local .app/DMG only

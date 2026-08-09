@@ -2,7 +2,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "Kuaishuo",
+    name: "Speakey",
     platforms: [.macOS(.v14)],
     dependencies: [
         .package(
@@ -12,11 +12,11 @@ let package = Package(
     ],
     targets: [
         .executableTarget(
-            name: "kuaishuo",
+            name: "speakey",
             dependencies: [
                 .product(name: "FluidAudio", package: "FluidAudio"),
             ],
-            path: "Sources/Kuaishuo",
+            path: "Sources/Speakey",
             exclude: ["Info.plist"],
             linkerSettings: [
                 .linkedFramework("AVFoundation"),

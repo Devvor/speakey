@@ -8,13 +8,13 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 SWIFT_DIR="$PROJECT_DIR/swift"
 BUILD_DIR="$PROJECT_DIR/build"
-APP_NAME="Kuaishuo"
+APP_NAME="Speakey"
 APP_BUNDLE="$BUILD_DIR/$APP_NAME.app"
 DMG_NAME="$APP_NAME.dmg"
 DMG_PATH="$PROJECT_DIR/$DMG_NAME"
 VERSION="1.0.0"
 
-echo "=== Kuaishuo — DMG Packager ==="
+echo "=== Speakey — DMG Packager ==="
 echo ""
 
 # Prefer swift.org toolchain over CLT to avoid PackageDescription ABI mismatch
@@ -31,9 +31,9 @@ cd "$SWIFT_DIR"
 swift build -c "$BUILD_MODE" 2>&1
 
 if [ "$BUILD_MODE" = "release" ]; then
-    BINARY="$SWIFT_DIR/.build/release/kuaishuo"
+    BINARY="$SWIFT_DIR/.build/release/speakey"
 else
-    BINARY="$SWIFT_DIR/.build/debug/kuaishuo"
+    BINARY="$SWIFT_DIR/.build/debug/speakey"
 fi
 if [ ! -f "$BINARY" ]; then
     echo "Error: Binary not found at $BINARY"
@@ -47,7 +47,7 @@ rm -rf "$APP_BUNDLE"
 mkdir -p "$APP_BUNDLE/Contents/MacOS"
 
 # Copy binary
-cp "$BINARY" "$APP_BUNDLE/Contents/MacOS/kuaishuo"
+cp "$BINARY" "$APP_BUNDLE/Contents/MacOS/speakey"
 
 # Write Info.plist
 cat > "$APP_BUNDLE/Contents/Info.plist" << 'PLIST'
@@ -56,13 +56,13 @@ cat > "$APP_BUNDLE/Contents/Info.plist" << 'PLIST'
 <plist version="1.0">
 <dict>
     <key>CFBundleName</key>
-    <string>Kuaishuo</string>
+    <string>Speakey</string>
     <key>CFBundleDisplayName</key>
-    <string>Kuaishuo</string>
+    <string>Speakey</string>
     <key>CFBundleIdentifier</key>
-    <string>com.devvor.kuaishuo</string>
+    <string>com.devvor.speakey</string>
     <key>CFBundleExecutable</key>
-    <string>kuaishuo</string>
+    <string>speakey</string>
     <key>CFBundleVersion</key>
     <string>1.0.0</string>
     <key>CFBundleShortVersionString</key>
@@ -74,7 +74,7 @@ cat > "$APP_BUNDLE/Contents/Info.plist" << 'PLIST'
     <key>LSMinimumSystemVersion</key>
     <string>14.0</string>
     <key>NSMicrophoneUsageDescription</key>
-    <string>Kuaishuo needs microphone access to record speech for transcription.</string>
+    <string>Speakey needs microphone access to record speech for transcription.</string>
     <key>NSHighResolutionCapable</key>
     <true/>
 </dict>
@@ -93,7 +93,7 @@ else
 fi
 codesign --force --sign "$SIGNING_IDENTITY" \
     --entitlements /dev/stdin \
-    "$APP_BUNDLE/Contents/MacOS/kuaishuo" << 'ENTITLEMENTS'
+    "$APP_BUNDLE/Contents/MacOS/speakey" << 'ENTITLEMENTS'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -147,6 +147,6 @@ echo "Preferred install: ./scripts/build-swift.sh && run the printed binary path
 echo ""
 echo "If you use this DMG on your machine:"
 echo "  1. Open $DMG_NAME"
-echo "  2. Drag Kuaishuo to Applications"
+echo "  2. Drag Speakey to Applications"
 echo "  3. Right-click > Open if macOS blocks the unsigned app"
 echo "  4. Grant Microphone + Accessibility permissions when prompted"

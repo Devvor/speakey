@@ -13,9 +13,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var overlayPanel: OverlayPanel?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        KuaishuoLog.write("App launched from \(Bundle.main.bundlePath)")
+        SpeakeyLog.write("App launched from \(Bundle.main.bundlePath)")
         promptForAccessibilityIfNeeded()
-        KuaishuoLog.write("AX trusted: \(AXIsProcessTrusted())")
+        SpeakeyLog.write("AX trusted: \(AXIsProcessTrusted())")
         requestMicPermission()
         requestNotificationPermission()
         setupOverlay()
@@ -32,14 +32,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func requestMicPermission() {
         switch AVCaptureDevice.authorizationStatus(for: .audio) {
         case .authorized:
-            print("[Kuaishuo] Microphone permission: authorized")
+            print("[Speakey] Microphone permission: authorized")
         case .notDetermined:
-            print("[Kuaishuo] Requesting microphone permission...")
+            print("[Speakey] Requesting microphone permission...")
             AVCaptureDevice.requestAccess(for: .audio) { granted in
-                print("[Kuaishuo] Microphone permission \(granted ? "granted" : "denied")")
+                print("[Speakey] Microphone permission \(granted ? "granted" : "denied")")
             }
         case .denied, .restricted:
-            print("[Kuaishuo] Microphone permission denied — check System Settings > Privacy > Microphone")
+            print("[Speakey] Microphone permission denied — check System Settings > Privacy > Microphone")
             appState.status = .error("Grant Microphone permission in System Settings")
         @unknown default:
             break
@@ -48,14 +48,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func requestNotificationPermission() {
         guard Bundle.main.bundleIdentifier != nil else {
-            print("[Kuaishuo] Skipping notification permission — no app bundle")
+            print("[Speakey] Skipping notification permission — no app bundle")
             return
         }
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { granted, error in
             if let error {
-                print("[Kuaishuo] Notification permission error: \(error.localizedDescription)")
+                print("[Speakey] Notification permission error: \(error.localizedDescription)")
             } else {
-                print("[Kuaishuo] Notification permission \(granted ? "granted" : "denied")")
+                print("[Speakey] Notification permission \(granted ? "granted" : "denied")")
             }
         }
     }
@@ -86,7 +86,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if !fnKeyMonitor.start() {
             let path = Bundle.main.bundlePath
             appState.status = .error("Quit & reopen after granting permissions")
-            KuaishuoLog.write("Event tap failed — path: \(path)")
+            SpeakeyLog.write("Event tap failed — path: \(path)")
         }
     }
 
@@ -98,18 +98,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
                 if needsDownload {
                     appState.status = .downloading
-                    print("[Kuaishuo] Models not cached, downloading...")
+                    print("[Speakey] Models not cached, downloading...")
                     try await AsrModels.download(version: .v3)
-                    print("[Kuaishuo] Download complete")
+                    print("[Speakey] Download complete")
                 }
 
                 appState.status = .loadingModel
-                print("[Kuaishuo] Loading model into memory...")
+                print("[Speakey] Loading model into memory...")
                 try await transcriptionService.loadFromCache()
-                print("[Kuaishuo] Model loaded successfully")
+                print("[Speakey] Model loaded successfully")
 
                 appState.status = .ready
-                KuaishuoLog.write("Model ready")
+                SpeakeyLog.write("Model ready")
 
                 if needsDownload {
                     sendReadyNotification()
@@ -123,7 +123,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func sendReadyNotification() {
         guard Bundle.main.bundleIdentifier != nil else { return }
         let content = UNMutableNotificationContent()
-        content.title = "Kuaishuo"
+        content.title = "Speakey"
         content.body = "Model ready — hold fn to dictate, or fn+Space for hands-free"
         content.sound = .default
 
@@ -134,7 +134,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         )
         UNUserNotificationCenter.current().add(request) { error in
             if let error {
-                print("[Kuaishuo] Failed to send notification: \(error.localizedDescription)")
+                print("[Speakey] Failed to send notification: \(error.localizedDescription)")
             }
         }
     }
@@ -176,7 +176,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
             let samples = audioRecorder.stopRecording()
             let duration = Double(samples.count) / 16000.0
-            print("[Kuaishuo] Captured \(samples.count) samples (\(String(format: "%.1f", duration))s of audio)")
+            print("[Speakey] Captured \(samples.count) samples (\(String(format: "%.1f", duration))s of audio)")
 
             let rms: Float
             if samples.isEmpty {
@@ -184,32 +184,32 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             } else {
                 let maxAmp = samples.map { abs($0) }.max() ?? 0
                 rms = sqrt(samples.map { $0 * $0 }.reduce(0, +) / Float(samples.count))
-                print("[Kuaishuo] Audio levels — max: \(maxAmp), RMS: \(rms)")
+                print("[Speakey] Audio levels — max: \(maxAmp), RMS: \(rms)")
             }
 
             // Too short or near-silent — skip inference and explain briefly.
             let minDuration = 0.25
             let minRMS: Float = 0.004
             if samples.isEmpty || duration < minDuration || rms < minRMS {
-                print("[Kuaishuo] Skipping transcription — empty/short/silent audio")
+                print("[Speakey] Skipping transcription — empty/short/silent audio")
                 await showTransientNotice("No speech detected")
                 return
             }
 
             do {
                 let text = try await transcriptionService.transcribe(samples)
-                print("[Kuaishuo] Transcription complete (\(text.count) chars)")
+                print("[Speakey] Transcription complete (\(text.count) chars)")
                 if !text.isEmpty {
                     PasteService.paste(text)
                     appState.lastTranscription = text
                     appState.status = .ready
                     hideOverlay()
                 } else {
-                    print("[Kuaishuo] Transcription returned empty text")
+                    print("[Speakey] Transcription returned empty text")
                     await showTransientNotice("No speech detected")
                 }
             } catch {
-                print("[Kuaishuo] Transcription error: \(error)")
+                print("[Speakey] Transcription error: \(error)")
                 await showTransientNotice("Transcription failed", recoverToReady: true)
             }
         }
@@ -232,7 +232,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         appState.isHandsFree = false
         appState.status = .ready
         hideOverlay()
-        KuaishuoLog.write("Recording cancelled — discarded")
+        SpeakeyLog.write("Recording cancelled — discarded")
     }
 
     // MARK: - Overlay

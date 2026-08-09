@@ -31,7 +31,7 @@ final class FnKeyMonitor: @unchecked Sendable {
 
     func start() -> Bool {
         guard AXIsProcessTrusted() else {
-            KuaishuoLog.write("Event monitor failed: AXIsProcessTrusted=false")
+            SpeakeyLog.write("Event monitor failed: AXIsProcessTrusted=false")
             return false
         }
 
@@ -75,9 +75,9 @@ final class FnKeyMonitor: @unchecked Sendable {
 
         let ok = !monitors.isEmpty
         if ok {
-            KuaishuoLog.write("Fn key monitor started (NSEvent global + local monitors)")
+            SpeakeyLog.write("Fn key monitor started (NSEvent global + local monitors)")
         } else {
-            KuaishuoLog.write("Event monitor failed: add*MonitorForEvents returned nil")
+            SpeakeyLog.write("Event monitor failed: add*MonitorForEvents returned nil")
         }
         return ok
     }
@@ -116,7 +116,7 @@ final class FnKeyMonitor: @unchecked Sendable {
         guard event.keyCode == 63 || event.keyCode == 179 else { return }
 
         let fnDown = event.modifierFlags.contains(.function)
-        KuaishuoLog.write("fn flagsChanged keyCode=\(event.keyCode) down=\(fnDown) mode=\(mode)")
+        SpeakeyLog.write("fn flagsChanged keyCode=\(event.keyCode) down=\(fnDown) mode=\(mode)")
 
         if fnDown && !fnWasDown {
             fnWasDown = true
@@ -165,7 +165,7 @@ final class FnKeyMonitor: @unchecked Sendable {
 
     private func fnDownOnMain() {
         if isCoolingDown {
-            KuaishuoLog.write("fn down ignored — cooldown")
+            SpeakeyLog.write("fn down ignored — cooldown")
             return
         }
 
@@ -187,7 +187,7 @@ final class FnKeyMonitor: @unchecked Sendable {
     private func fnUpOnMain() {
         if ignoreNextFnUp {
             ignoreNextFnUp = false
-            KuaishuoLog.write("fn up ignored — chord/cancel release")
+            SpeakeyLog.write("fn up ignored — chord/cancel release")
             return
         }
 
@@ -198,12 +198,12 @@ final class FnKeyMonitor: @unchecked Sendable {
             // Short tap with no Space — ignore (no longer used for hands-free).
             mode = .idle
             pressStartedAt = nil
-            KuaishuoLog.write("fn short tap ignored")
+            SpeakeyLog.write("fn short tap ignored")
 
         case .holding:
             mode = .idle
             beginCooldown()
-            KuaishuoLog.write("fn hold released — finalize")
+            SpeakeyLog.write("fn hold released — finalize")
             onRelease?()
 
         case .handsFree:
@@ -211,7 +211,7 @@ final class FnKeyMonitor: @unchecked Sendable {
             mode = .idle
             pressStartedAt = nil
             beginCooldown()
-            KuaishuoLog.write("fn tap in hands-free — finalize")
+            SpeakeyLog.write("fn tap in hands-free — finalize")
             onHandsFreeStop?()
 
         case .idle:
@@ -221,7 +221,7 @@ final class FnKeyMonitor: @unchecked Sendable {
 
     private func handleFnSpace() {
         if isCoolingDown {
-            KuaishuoLog.write("fn+Space ignored — cooldown")
+            SpeakeyLog.write("fn+Space ignored — cooldown")
             return
         }
 
@@ -237,7 +237,7 @@ final class FnKeyMonitor: @unchecked Sendable {
             if fnWasDown {
                 ignoreNextFnUp = true
             }
-            KuaishuoLog.write("fn+Space — convert hold to hands-free")
+            SpeakeyLog.write("fn+Space — convert hold to hands-free")
             onHandsFreeStart?()
 
         case .handsFree:
@@ -264,7 +264,7 @@ final class FnKeyMonitor: @unchecked Sendable {
         guard mode == .pressPending, fnWasDown else { return }
 
         mode = .holding
-        KuaishuoLog.write("fn hold threshold reached — starting recording")
+        SpeakeyLog.write("fn hold threshold reached — starting recording")
         onHoldStart?()
     }
 
@@ -275,14 +275,14 @@ final class FnKeyMonitor: @unchecked Sendable {
         if fnWasDown {
             ignoreNextFnUp = true
         }
-        KuaishuoLog.write("fn+Space — hands-free start")
+        SpeakeyLog.write("fn+Space — hands-free start")
         onHandsFreeStart?()
     }
 
     private func handleEscape() {
         switch mode {
         case .holding:
-            KuaishuoLog.write("Esc — cancel hold recording")
+            SpeakeyLog.write("Esc — cancel hold recording")
             cancelHoldTimer()
             mode = .idle
             if fnWasDown {
@@ -292,7 +292,7 @@ final class FnKeyMonitor: @unchecked Sendable {
             onCancel?()
 
         case .handsFree:
-            KuaishuoLog.write("Esc — cancel hands-free recording")
+            SpeakeyLog.write("Esc — cancel hands-free recording")
             mode = .idle
             pressStartedAt = nil
             if fnWasDown {
@@ -302,7 +302,7 @@ final class FnKeyMonitor: @unchecked Sendable {
             onCancel?()
 
         case .pressPending:
-            KuaishuoLog.write("Esc — abort pending press")
+            SpeakeyLog.write("Esc — abort pending press")
             cancelHoldTimer()
             mode = .idle
             pressStartedAt = nil
@@ -327,9 +327,9 @@ final class FnKeyMonitor: @unchecked Sendable {
     deinit { stop() }
 }
 
-enum KuaishuoLog {
+enum SpeakeyLog {
     private static let url = FileManager.default.homeDirectoryForCurrentUser
-        .appendingPathComponent("Library/Logs/Kuaishuo.log")
+        .appendingPathComponent("Library/Logs/Speakey.log")
 
     static func write(_ message: String) {
         let line = "[\(ISO8601DateFormatter().string(from: Date()))] \(message)\n"

@@ -3,10 +3,10 @@
 <plist version="1.0">
 <dict>
     <key>NSMicrophoneUsageDescription</key>
-    <string>Kuaishuo needs microphone access to record speech for transcription.</string>
+    <string>Speakey needs microphone access to record speech for transcription.</string>
     <key>CFBundleName</key>
-    <string>Kuaishuo</string>
+    <string>Speakey</string>
     <key>CFBundleIdentifier</key>
-    <string>com.devvor.kuaishuo</string>
+    <string>com.devvor.speakey</string>
 </dict>
 </plist>

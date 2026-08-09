@@ -50,7 +50,7 @@ struct MenuBarView: View {
                         try LaunchAtLogin.setEnabled(enabled)
                     } catch {
                         launchAtLogin = LaunchAtLogin.isEnabled
-                        print("[Kuaishuo] Launch at login failed: \(error.localizedDescription)")
+                        print("[Speakey] Launch at login failed: \(error.localizedDescription)")
                     }
                 }
 
@@ -61,7 +61,7 @@ struct MenuBarView: View {
 
             Divider()
 
-            Button("Quit Kuaishuo") {
+            Button("Quit Speakey") {
                 NSApplication.shared.terminate(nil)
             }
             .keyboardShortcut("q")
@@ -79,7 +79,7 @@ struct MenuBarView: View {
             .foregroundStyle(.secondary)
             .fixedSize(horizontal: false, vertical: true)
 
-        Text("If permissions look correct, remove Kuaishuo from each list, re-add it, then quit & reopen.")
+        Text("If permissions look correct, remove Speakey from each list, re-add it, then quit & reopen.")
             .font(.caption)
             .foregroundStyle(.secondary)
             .fixedSize(horizontal: false, vertical: true)

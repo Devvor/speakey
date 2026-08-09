@@ -1,4 +1,4 @@
-# Kuaishuo - Claude Development Guide
+# Speakey - Claude Development Guide
 
 > **Project Context:** Local-first speech-to-text CLI application using NVIDIA's Parakeet TDT 0.6B v3 model, optimized for Apple Neural Engine via MLX framework.
 
@@ -25,7 +25,7 @@ parakeet-stt fn-ptt start
 
 # Build & run the native Swift menu-bar app (source-first; no public DMG)
 ./scripts/build-swift.sh          # debug
-./swift/.build/debug/kuaishuo
+./swift/.build/debug/speakey
 ./scripts/build-swift.sh release  # release
 ```
 
@@ -34,7 +34,7 @@ parakeet-stt fn-ptt start
 ## Project Structure
 
 ```
-kuaishuo/
+speakey/
 ├── src/                         # Python application package
 │   ├── __init__.py
 │   ├── config.py                # Configuration management
@@ -57,8 +57,8 @@ kuaishuo/
 │       ├── manager.py           # Process lifecycle (PID-based)
 │       └── run.py               # Subprocess entry point
 │
-├── swift/                       # Native macOS menu-bar app (Kuaishuo)
-│   └── Sources/Kuaishuo/
+├── swift/                       # Native macOS menu-bar app (Speakey)
+│   └── Sources/Speakey/
 │       ├── AppDelegate.swift        # App lifecycle + fn-key handling
 │       ├── AudioRecorder.swift      # AVFoundation audio capture
 │       ├── FnKeyMonitor.swift       # Global fn-key event tap
@@ -161,7 +161,7 @@ parakeet-stt daemon start
 **Completed:**
 - ✅ Backend abstraction layer (`src/backends/`)
 - ✅ MLX backend for Apple Silicon
-- ✅ Swift macOS menu-bar app (Kuaishuo) using CoreML + parakeet-mlx
+- ✅ Swift macOS menu-bar app (Speakey) using CoreML + parakeet-mlx
 - ✅ Optional local DMG packaging script (not public distribution)
 - ✅ GitHub Actions CI pipeline
 - ✅ Pre-commit hooks
@@ -553,7 +553,7 @@ time parakeet-stt transcribe 2086-149220-0033.wav  # Auto-detect
 - `src/cli.py` - CLI interface
 - `src/daemon/` - Background recording daemon
 - `src/fn_ptt/` - Python fn-key push-to-talk
-- `swift/` - Native macOS menu-bar app (Kuaishuo)
+- `swift/` - Native macOS menu-bar app (Speakey)
 
 ### Build & Packaging
 - `scripts/build-swift.sh` - Build Swift app (`debug` or `release` arg)
@@ -593,7 +593,7 @@ time parakeet-stt transcribe 2086-149220-0033.wav  # Auto-detect
 ### 🚀 Phase 3: Native macOS App — IN PROGRESS
 - [x] Backend abstraction layer (`src/backends/`)
 - [x] MLX backend for Apple Silicon
-- [x] Swift menu-bar app (Kuaishuo) — CoreML inference
+- [x] Swift menu-bar app (Speakey) — CoreML inference
 - [x] Optional local DMG packaging script (not public distribution)
 - [x] CI pipeline (GitHub Actions)
 - [x] Pre-commit hooks
