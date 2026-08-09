@@ -120,7 +120,9 @@ python3 -m venv venv
 source venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
-# Apple Silicon — also: pip install -r requirements-mlx.txt
+# Optional MLX backend (Apple Silicon):
+#   pip install "parakeet-stt[mlx]"
+# or: pip install mlx librosa soundfile "numpy>=2.2.5,<2.4"
 
 parakeet-stt transcribe audio.wav
 parakeet-stt fn-ptt start
@@ -160,3 +162,4 @@ CI on `main`: Python lint, unit tests, Swift debug build, `pip-audit`.
 
 - **This repository’s source code** is released under the [MIT License](LICENSE) (Copyright © 2026 Devvor).
 - **NVIDIA Parakeet model weights** used at runtime remain under [CC-BY-4.0](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3).
+- Third-party attribution: [NOTICE](NOTICE) (FluidAudio Apache-2.0, Parakeet CC-BY-4.0).

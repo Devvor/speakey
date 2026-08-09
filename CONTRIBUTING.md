@@ -46,4 +46,4 @@ pytest -m "not slow"
 
 ## License
 
-Code contributions are accepted under the MIT License (see `LICENSE`). NVIDIA Parakeet model weights remain under CC-BY-4.0.
+Code contributions are accepted under the MIT License (see `LICENSE`). NVIDIA Parakeet model weights remain under CC-BY-4.0. Third-party notices: `NOTICE`.

@@ -26,7 +26,8 @@ actor TranscriptionService {
             throw TranscriptionError.notInitialized
         }
         let result = try await manager.transcribe(audioSamples, source: .microphone)
-        print("[Speakey] ASRResult — text: '\(result.text)', confidence: \(result.confidence)")
+        // Never log transcription text (privacy).
+        print("[Speakey] ASRResult — \(result.text.count) chars, confidence: \(result.confidence)")
         return result.text
     }
 }

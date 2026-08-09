@@ -1,0 +1,17 @@
+Speakey
+Copyright (c) 2026 Devvor
+
+This product is licensed under the MIT License (see LICENSE).
+
+Third-party components
+----------------------
+
+FluidAudio (https://github.com/FluidInference/FluidAudio)
+  License: Apache License 2.0
+
+NVIDIA Parakeet TDT 0.6B v3 model weights
+  (https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3)
+  License: CC-BY-4.0
+  Model weights are downloaded at runtime and are not redistributed
+  in this repository. Attribution is required under CC-BY-4.0 when
+  using or redistributing those weights.
