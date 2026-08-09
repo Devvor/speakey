@@ -2,6 +2,7 @@ import SwiftUI
 
 struct OverlayView: View {
     let status: AppState.Status
+    var isHandsFree = false
 
     var body: some View {
         HStack(spacing: 10) {
@@ -26,6 +27,10 @@ struct OverlayView: View {
         case .transcribing:
             ProgressView()
                 .controlSize(.small)
+        case .error:
+            Image(systemName: "exclamationmark.circle.fill")
+                .foregroundStyle(.orange)
+                .font(.system(size: 12))
         default:
             EmptyView()
         }
@@ -33,9 +38,16 @@ struct OverlayView: View {
 
     private var label: String {
         switch status {
-        case .recording:    return "Recording..."
-        case .transcribing: return "Transcribing..."
-        default:            return ""
+        case .recording:
+            return isHandsFree
+                ? "Listening… tap fn to finish"
+                : "Recording… Esc to cancel"
+        case .transcribing:
+            return "Transcribing..."
+        case .error(let message):
+            return message
+        default:
+            return ""
         }
     }
 }

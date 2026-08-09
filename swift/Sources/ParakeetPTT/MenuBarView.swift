@@ -54,9 +54,10 @@ struct MenuBarView: View {
                     }
                 }
 
-            Text("Hold fn for 0.3s to record")
+            Text("Hold fn to record · fn+Space for hands-free · Esc to cancel")
                 .font(.caption)
                 .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
 
             Divider()
 
@@ -73,9 +74,20 @@ struct MenuBarView: View {
     private var permissionFixes: some View {
         Divider()
 
-        Text("Grant permissions, then restart the app.")
+        Text("Accessibility is required for fn-key detection and paste. Microphone is required to record.")
             .font(.caption)
             .foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+
+        Text("If permissions look correct, remove ParakeetPTT from each list, re-add it, then quit & reopen.")
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+
+        Text(Bundle.main.bundlePath)
+            .font(.caption2)
+            .foregroundStyle(.tertiary)
+            .lineLimit(2)
 
         Button("Open Accessibility Settings") {
             SystemSettings.open(.accessibility)
@@ -83,10 +95,6 @@ struct MenuBarView: View {
 
         Button("Open Microphone Settings") {
             SystemSettings.open(.microphone)
-        }
-
-        Button("Open Input Monitoring Settings") {
-            SystemSettings.open(.inputMonitoring)
         }
     }
 }

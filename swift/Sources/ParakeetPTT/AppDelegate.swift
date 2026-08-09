@@ -13,11 +13,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var overlayPanel: OverlayPanel?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        PTTLog.write("App launched from \(Bundle.main.bundlePath)")
+        promptForAccessibilityIfNeeded()
+        PTTLog.write("AX trusted: \(AXIsProcessTrusted())")
         requestMicPermission()
         requestNotificationPermission()
         setupOverlay()
         setupFnKeyMonitor()
         loadModel()
+    }
+
+    private func promptForAccessibilityIfNeeded() {
+        guard !AXIsProcessTrusted() else { return }
+        let options = ["AXTrustedCheckOptionPrompt": true] as CFDictionary
+        AXIsProcessTrustedWithOptions(options)
     }
 
     private func requestMicPermission() {
@@ -59,14 +68,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func setupFnKeyMonitor() {
         fnKeyMonitor.onHoldStart = { [weak self] in
-            self?.startRecording()
+            self?.startRecording(handsFree: false)
         }
         fnKeyMonitor.onRelease = { [weak self] in
             self?.stopRecordingAndTranscribe()
         }
+        fnKeyMonitor.onHandsFreeStart = { [weak self] in
+            self?.enterHandsFree()
+        }
+        fnKeyMonitor.onHandsFreeStop = { [weak self] in
+            self?.stopRecordingAndTranscribe()
+        }
+        fnKeyMonitor.onCancel = { [weak self] in
+            self?.cancelRecording()
+        }
 
         if !fnKeyMonitor.start() {
-            appState.status = .error("Grant Accessibility permission in System Settings")
+            let path = Bundle.main.bundlePath
+            appState.status = .error("Quit & reopen after granting permissions")
+            PTTLog.write("Event tap failed — path: \(path)")
         }
     }
 
@@ -89,6 +109,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 print("[PTT] Model loaded successfully")
 
                 appState.status = .ready
+                PTTLog.write("Model ready")
 
                 if needsDownload {
                     sendReadyNotification()
@@ -103,7 +124,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         guard Bundle.main.bundleIdentifier != nil else { return }
         let content = UNMutableNotificationContent()
         content.title = "Parakeet PTT"
-        content.body = "Model ready — hold fn to start dictating"
+        content.body = "Model ready — hold fn to dictate, or fn+Space for hands-free"
         content.sound = .default
 
         let request = UNNotificationRequest(
@@ -120,24 +141,36 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     // MARK: - Recording pipeline
 
-    private func startRecording() {
-        Task {
-            guard appState.status == .ready else { return }
-            appState.status = .recording
-            showOverlay()
+    private func startRecording(handsFree: Bool) {
+        guard appState.status == .ready else { return }
+        appState.isHandsFree = handsFree
+        appState.status = .recording
+        showOverlay()
 
-            do {
-                try audioRecorder.startRecording()
-            } catch {
-                appState.status = .error("Mic error: \(error.localizedDescription)")
-                hideOverlay()
-            }
+        do {
+            try audioRecorder.startRecording()
+        } catch {
+            appState.isHandsFree = false
+            appState.status = .error("Mic error: \(error.localizedDescription)")
+            hideOverlay()
+            fnKeyMonitor.resetToIdle()
         }
+    }
+
+    /// fn+Space: start hands-free, or convert an in-progress hold session.
+    private func enterHandsFree() {
+        if appState.status == .recording {
+            appState.isHandsFree = true
+            updateOverlay()
+            return
+        }
+        startRecording(handsFree: true)
     }
 
     private func stopRecordingAndTranscribe() {
         Task {
             guard appState.status == .recording else { return }
+            appState.isHandsFree = false
             appState.status = .transcribing
             updateOverlay()
 
@@ -145,17 +178,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             let duration = Double(samples.count) / 16000.0
             print("[PTT] Captured \(samples.count) samples (\(String(format: "%.1f", duration))s of audio)")
 
-            // Check audio levels
-            if !samples.isEmpty {
+            let rms: Float
+            if samples.isEmpty {
+                rms = 0
+            } else {
                 let maxAmp = samples.map { abs($0) }.max() ?? 0
-                let rms = sqrt(samples.map { $0 * $0 }.reduce(0, +) / Float(samples.count))
+                rms = sqrt(samples.map { $0 * $0 }.reduce(0, +) / Float(samples.count))
                 print("[PTT] Audio levels — max: \(maxAmp), RMS: \(rms)")
             }
 
-            guard !samples.isEmpty else {
-                print("[PTT] No samples captured, skipping transcription")
-                appState.status = .ready
-                hideOverlay()
+            // Too short or near-silent — skip inference and explain briefly.
+            let minDuration = 0.25
+            let minRMS: Float = 0.004
+            if samples.isEmpty || duration < minDuration || rms < minRMS {
+                print("[PTT] Skipping transcription — empty/short/silent audio")
+                await showTransientNotice("No speech detected")
                 return
             }
 
@@ -165,27 +202,51 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 if !text.isEmpty {
                     PasteService.paste(text)
                     appState.lastTranscription = text
+                    appState.status = .ready
+                    hideOverlay()
                 } else {
                     print("[PTT] Transcription returned empty text")
+                    await showTransientNotice("No speech detected")
                 }
             } catch {
                 print("[PTT] Transcription error: \(error)")
-                appState.status = .error("Transcription failed: \(error.localizedDescription)")
+                await showTransientNotice("Transcription failed", recoverToReady: true)
             }
-
-            appState.status = .ready
-            hideOverlay()
         }
+    }
+
+    /// Brief overlay/status message, then return to ready (avoids stuck error state).
+    private func showTransientNotice(_ message: String, recoverToReady: Bool = true) async {
+        appState.status = .error(message)
+        updateOverlay()
+        try? await Task.sleep(nanoseconds: 1_800_000_000)
+        if recoverToReady {
+            appState.status = .ready
+        }
+        hideOverlay()
+    }
+
+    private func cancelRecording() {
+        guard appState.status == .recording else { return }
+        _ = audioRecorder.stopRecording()
+        appState.isHandsFree = false
+        appState.status = .ready
+        hideOverlay()
+        PTTLog.write("Recording cancelled — discarded")
     }
 
     // MARK: - Overlay
 
     private func showOverlay() {
-        overlayPanel?.showView(OverlayView(status: appState.status))
+        overlayPanel?.showView(
+            OverlayView(status: appState.status, isHandsFree: appState.isHandsFree)
+        )
     }
 
     private func updateOverlay() {
-        overlayPanel?.showView(OverlayView(status: appState.status))
+        overlayPanel?.showView(
+            OverlayView(status: appState.status, isHandsFree: appState.isHandsFree)
+        )
     }
 
     private func hideOverlay() {

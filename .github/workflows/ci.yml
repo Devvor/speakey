@@ -41,7 +41,6 @@ jobs:
 
       - name: Run unit tests (skip slow/integration)
         run: pytest -m "not slow" --no-header -q
-        continue-on-error: true
 
   swift-build:
     name: Swift Build
@@ -66,5 +65,4 @@ jobs:
         run: pip install pip-audit
 
       - name: Audit Python dependencies
-        run: pip-audit -r requirements.txt --ignore-vuln PYSEC-2024-XXXXX || true
-        continue-on-error: true
+        run: pip-audit -r requirements.txt
